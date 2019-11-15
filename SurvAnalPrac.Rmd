@@ -1,0 +1,77 @@
+---
+title: "SurvivalAnalysisPrac"
+author: "Mohd Azmi"
+date: "15/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+## Library
+
+```{r "Library", message=FALSE}
+library(haven)
+library(dplyr)
+library(psych)
+library(lubridate)
+library(knitr)
+```
+
+## Import Dataset
+
+```{r "Dataset", message=FALSE}
+DataSet <- read_dta("stroke_outcome.dta")
+DataSet <- DataSet %>%
+  mutate_if(is.labelled, funs(as_factor(.)))
+kable(head(DataSet))
+```
+
+alternatively
+
+```{r}
+DataSet2 <- read_dta("stroke_outcome.dta")
+DataSet2 <- DataSet %>%
+  mutate(sex = as_factor(sex),
+         race = as_factor(race),
+         event = as_factor(event),
+         dm2 = as_factor(dm2),
+         hpt2 = as_factor(hpt2),
+         race2 = as_factor(race2),
+         event_s = as_factor(event_s))
+kable(head(DataSet2))
+```
+
+# Descriptive Analysis and Data Exploration
+
+## Summary
+
+```{r , message=FALSE}
+kable(summary(DataSet))
+kable(describe(DataSet))
+```
+
+count duration between 2 date
+
+```{r}
+DataSet$Dur_Days <- as.duration(DataSet$doa %--% DataSet$dod) / ddays(1)
+kable(head(DataSet))
+```
+
+group data by event, and descriptive analysis
+
+```{r}
+DataSet %>%
+  group_by(event) %>%
+  summarise(Mean_Age = mean(age), SD_Age = sd(age),
+            Mean_GCS = mean(gcs), SD_GCS = sd(gcs),
+            Mean_SBP = mean(sbp), SD_SBP = sd(age),
+            Mean_DBP = mean(dbp), SD_DBP = sd(dbp),
+            ) %>%
+  kable()
+```
+
+
