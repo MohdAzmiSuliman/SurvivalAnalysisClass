@@ -24,6 +24,9 @@ library(psych)
 library(lubridate)
 library(knitr)
 library(ggplot2)
+library(survival)
+library(broom)
+library(survminer)
 ```
 
 ## Import Dataset
@@ -125,4 +128,109 @@ ggplot(DataSet, aes(x=factor(event), fill=factor(event))) +
   facet_wrap(~race2)
 
 ```
+
+# Univariable
+
+## Overall Model
+
+### Kaplan-Meier Survival Estimates
+
+
+```{r}
+Overall_KM <- survfit(Surv(time = Dur_Days, event == "dead") ~ 1,
+                      data = DataSet,
+                      type = "kaplan-meier")
+summary(Overall_KM)
+kable(tidy(Overall_KM))
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(Overall_KM,
+           data = DataSet,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+## Univariable - IV - gender
+
+### KM Estimate
+
+```{r}
+KM_gender <- survfit(Surv(time = Dur_Days, event == "dead") ~ sex,
+                     data = DataSet,
+                     type = "kaplan-meier")
+summary(KM_gender)
+kable(tidy(KM_gender))
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(KM_gender,
+           data = DataSet,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+p = 0.41, thus no significant difference between survival in male or female.
+
+## Univariable - IV - DM
+
+### KM Estimate
+
+```{r}
+KM_DM <- survfit(Surv(time = Dur_Days, event == "dead") ~ dm2,
+                 data = DataSet,
+                 type = "kaplan-meier")
+summary(KM_DM)
+kable(tidy(KM_DM))
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(KM_DM,
+           data = DataSet,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+p < 0.05, thus there is significant different between DM yes and DM no
+
+### Survival Function Estimate
+
+estimate number of survival at Q1, median and Q3
+
+
+```{r}
+kable(quantile(KM_DM, probs = c(0.25, 0.5, 0.75)))
+```
+
+### Survival Probability Estimate
+
+estimate time of survival at times = 20, 40 and 60 units of time
+
+```{r}
+summary(KM_DM, times = c(20, 40, 60))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
