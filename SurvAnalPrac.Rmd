@@ -2,7 +2,11 @@
 title: "SurvivalAnalysisPrac"
 author: "Mohd Azmi"
 date: "15/11/2019"
-output: html_document
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
 ---
 
 ```{r setup, include=FALSE}
@@ -19,6 +23,7 @@ library(dplyr)
 library(psych)
 library(lubridate)
 library(knitr)
+library(ggplot2)
 ```
 
 ## Import Dataset
@@ -63,6 +68,8 @@ kable(head(DataSet))
 
 group data by event, and descriptive analysis
 
+- numerical data
+
 ```{r}
 DataSet %>%
   group_by(event) %>%
@@ -74,4 +81,48 @@ DataSet %>%
   kable()
 ```
 
+
+- categorical data
+```{r}
+DataSet %>%
+  count(event, sex) %>%
+  kable()
+
+ggplot(DataSet, aes(x=factor(event), fill=factor(event))) +
+  geom_bar() +
+  facet_wrap(~sex)
+
+DataSet %>%
+  count(event, race) %>%
+  kable()
+
+ggplot(DataSet, aes(x=factor(event), fill=factor(event))) +
+  geom_bar() +
+  facet_wrap(~race)
+
+DataSet %>%
+  count(event, dm2) %>%
+  kable()
+
+ggplot(DataSet, aes(x=factor(event), fill=factor(event))) +
+  geom_bar() +
+  facet_wrap(~dm2)
+
+DataSet %>%
+  count(event, hpt2) %>%
+  kable()
+
+ggplot(DataSet, aes(x=factor(event), fill=factor(event))) +
+  geom_bar() +
+  facet_wrap(~hpt2)
+
+DataSet %>%
+  count(event, race2) %>%
+  kable()
+
+ggplot(DataSet, aes(x=factor(event), fill=factor(event))) +
+  geom_bar() +
+  facet_wrap(~race2)
+
+```
 
