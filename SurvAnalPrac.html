@@ -1528,7 +1528,8 @@ library(knitr)
 library(ggplot2)
 library(survival)
 library(broom)
-library(survminer)</code></pre>
+library(survminer)
+library(mfp)</code></pre>
 </div>
 <div id="import-dataset" class="section level2">
 <h2>Import Dataset</h2>
@@ -1671,7 +1672,7 @@ library(survminer)</code></pre>
 <pre class="r"><code>DataSet &lt;- read_dta(&quot;stroke_outcome.dta&quot;)</code></pre>
 <p>alternatively</p>
 <pre class="r"><code>DataSet2 &lt;- read_dta(&quot;stroke_outcome.dta&quot;)
-DataSet2 &lt;- DataSet %&gt;%
+DataSet2 &lt;- DataSet2 %&gt;%
   mutate(sex = as_factor(sex),
          race = as_factor(race),
          event = as_factor(event),
@@ -3037,9 +3038,19 @@ summary(Overall_KM)</code></pre>
 <h2>Univariable - IV - gender</h2>
 <div id="cox-ph-estimate" class="section level3">
 <h3>Cox PH Estimate</h3>
-<pre class="r"><code>#CPH_gender &lt;- coxph(Surv(time = Dur_Days, event == &quot;dead&quot;) ~ sex,
-#                     data = DataSet)
-#summary(CPH_gender)
+<pre class="r"><code>CPH_gender &lt;- coxph(Surv(time = Dur_Days, event == &quot;dead&quot;) ~ sex,
+                     data = DataSet)
+CPH_gender</code></pre>
+<pre><code>## Call:
+## coxph(formula = Surv(time = Dur_Days, event == &quot;dead&quot;) ~ sex, 
+##     data = DataSet)
+## 
+##     coef exp(coef) se(coef)  z  p
+## sex   NA        NA        0 NA NA
+## 
+## Likelihood ratio test=0  on 0 df, p=1
+## n= 262, number of events= 0</code></pre>
+<pre class="r"><code>#summary(CPH_gender)
 #kable(tidy(CPH_gender))</code></pre>
 </div>
 <div id="km-estimate" class="section level3">
@@ -5131,10 +5142,20 @@ summary(KM_SBPCat)</code></pre>
 <div id="cox-ph-estimate-1" class="section level3">
 <h3>Cox PH Estimate</h3>
 <p>Cox PH Estimate with efron method</p>
-<pre class="r"><code>#CPH_GCS &lt;- coxph(Surv(time = Dur_Days,
-#                      event == &quot;dead&quot;) ~ gcs,
-#                 data = DataSet)
-#summary(CPH_GCS)
+<pre class="r"><code>CPH_GCS &lt;- coxph(Surv(time = Dur_Days,
+                      event == &quot;dead&quot;) ~ gcs,
+                 data = DataSet)
+CPH_GCS</code></pre>
+<pre><code>## Call:
+## coxph(formula = Surv(time = Dur_Days, event == &quot;dead&quot;) ~ gcs, 
+##     data = DataSet)
+## 
+##     coef exp(coef) se(coef)  z  p
+## gcs   NA        NA        0 NA NA
+## 
+## Likelihood ratio test=0  on 0 df, p=1
+## n= 262, number of events= 0</code></pre>
+<pre class="r"><code>#summary(CPH_GCS)
 #kable(tidy(CPH_GCS))</code></pre>
 </div>
 <div id="km-estimate-3" class="section level3">
@@ -6407,18 +6428,774 @@ summary(KM_GCS)</code></pre>
 <h2>Univariable - IV - SBP (Numerical)</h2>
 <div id="cox-ph-estimate-2" class="section level3">
 <h3>Cox PH Estimate</h3>
-<pre class="r"><code>#CPH_SBP &lt;- coxph(Surv(time = Dur_Days,
-#                      event == &quot;dead&quot;) ~ sbp,
-#                 data = DataSet)
-#summary(CPH_SBP)
+<pre class="r"><code>CPH_SBP &lt;- coxph(Surv(time = Dur_Days,
+                      event == &quot;dead&quot;) ~ sbp,
+                 data = DataSet)
+CPH_SBP</code></pre>
+<pre><code>## Call:
+## coxph(formula = Surv(time = Dur_Days, event == &quot;dead&quot;) ~ sbp, 
+##     data = DataSet)
+## 
+##     coef exp(coef) se(coef)  z  p
+## sbp   NA        NA        0 NA NA
+## 
+## Likelihood ratio test=0  on 0 df, p=1
+## n= 262, number of events= 0</code></pre>
+<pre class="r"><code>#summary(CPH_SBP)
 #kable(tidy(CPH_SBP))</code></pre>
 </div>
 </div>
 </div>
 <div id="multivariable-analysis" class="section level1">
 <h1>Multivariable Analysis</h1>
-<div id="cox-ph---iv---gcs-dm2" class="section level2">
-<h2>Cox PH - IV - GCS &amp; DM2</h2>
+<div id="predictor---iv---gcs-age-dm-hpt" class="section level2">
+<h2>Predictor - IV - gcs, age, dm, hpt</h2>
+<div id="cox-ph" class="section level3">
+<h3>Cox PH</h3>
+<pre class="r"><code>CPH_GCSAgeDMHPT &lt;- coxph(Surv(time = Dur_Days,
+                              event == &quot;dead&quot;) ~ gcs + age + dm2 + hpt2,
+                         data = DataSet)
+CPH_GCSAgeDMHPT</code></pre>
+<pre><code>## Call:
+## coxph(formula = Surv(time = Dur_Days, event == &quot;dead&quot;) ~ gcs + 
+##     age + dm2 + hpt2, data = DataSet)
+## 
+##      coef exp(coef) se(coef)  z  p
+## gcs    NA        NA        0 NA NA
+## age    NA        NA        0 NA NA
+## dm2    NA        NA        0 NA NA
+## hpt2   NA        NA        0 NA NA
+## 
+## Likelihood ratio test=0  on 0 df, p=1
+## n= 262, number of events= 0</code></pre>
+<pre class="r"><code>#summary(CPH_GCSAgeDMHPT)
+#kable(tidy(CPH_GCSAgeDMHPT))</code></pre>
+</div>
+<div id="interaction-gcsage" class="section level3">
+<h3>Interaction gcs:age</h3>
+<pre class="r"><code>CPH_GCSAgeDMHPT_IntGCSAge &lt;- coxph(Surv(time = Dur_Days,
+                              event == &quot;dead&quot;) ~ gcs + age + dm2 + hpt2 + gcs:age,
+                         data = DataSet)
+CPH_GCSAgeDMHPT_IntGCSAge</code></pre>
+<pre><code>## Call:
+## coxph(formula = Surv(time = Dur_Days, event == &quot;dead&quot;) ~ gcs + 
+##     age + dm2 + hpt2 + gcs:age, data = DataSet)
+## 
+##         coef exp(coef) se(coef)  z  p
+## gcs       NA        NA        0 NA NA
+## age       NA        NA        0 NA NA
+## dm2       NA        NA        0 NA NA
+## hpt2      NA        NA        0 NA NA
+## gcs:age   NA        NA        0 NA NA
+## 
+## Likelihood ratio test=0  on 0 df, p=1
+## n= 262, number of events= 0</code></pre>
+<pre class="r"><code>#summary(CPH_GCSAgeDMHPT_IntGCSAge)
+#kable(tidy(CPH_GCSAgeDMHPT_IntGCSAge))</code></pre>
+</div>
+<div id="interaction-dmdpt" class="section level3">
+<h3>Interaction dm:dpt</h3>
+<ul>
+<li>model with interaction</li>
+</ul>
+<pre class="r"><code>CPH_GCSAgeDMHPT_IntDMHpt &lt;- coxph(Surv(time = Dur_Days,
+                              event == &quot;dead&quot;) ~ gcs + age + dm2 + hpt2 + dm2:hpt2,
+                         data = DataSet)
+CPH_GCSAgeDMHPT_IntDMHpt</code></pre>
+<pre><code>## Call:
+## coxph(formula = Surv(time = Dur_Days, event == &quot;dead&quot;) ~ gcs + 
+##     age + dm2 + hpt2 + dm2:hpt2, data = DataSet)
+## 
+##          coef exp(coef) se(coef)  z  p
+## gcs        NA        NA        0 NA NA
+## age        NA        NA        0 NA NA
+## dm2        NA        NA        0 NA NA
+## hpt2       NA        NA        0 NA NA
+## dm2:hpt2   NA        NA        0 NA NA
+## 
+## Likelihood ratio test=0  on 0 df, p=1
+## n= 262, number of events= 0</code></pre>
+<pre class="r"><code>#summary(CPH_GCSAgeDMHPT_IntDMHpt)
+#kable(tidy(CPH_GCSAgeDMHPT_IntDMHpt))</code></pre>
+<ul>
+<li>compare model with interaction using anova</li>
+</ul>
+<pre class="r"><code>anova(CPH_GCSAgeDMHPT_IntDMHpt, CPH_GCSAgeDMHPT, test = &quot;chisq&quot;)</code></pre>
+<pre><code>## Analysis of Deviance Table
+##  Cox model: response is  Surv(time = Dur_Days, event == &quot;dead&quot;)
+##  Model 1: ~ gcs + age + dm2 + hpt2 + dm2:hpt2
+##  Model 2: ~ gcs + age + dm2 + hpt2
+##   loglik Chisq Df P(&gt;|Chi|)
+## 1      0                   
+## 2      0     0  0         1</code></pre>
+<p>interaction term not significant</p>
+</div>
+</div>
+</div>
+<div id="final-model" class="section level1">
+<h1>Final Model</h1>
+<div id="prelim-final-model" class="section level2">
+<h2>Prelim Final Model</h2>
+<p>predictors: gcs, age, dm, hpt</p>
+<div id="model-assumption-checking---linearity-in-hazard-regression-assumption" class="section level3">
+<h3>Model Assumption Checking - Linearity in Hazard Regression Assumption</h3>
+<pre class="r"><code>mfp_PrelimFinalModel &lt;- mfp(Surv(time = Dur_Days,
+                                 event = event == &quot;dead&quot;) ~ fp(gcs, df = 4) + fp(age) + dm2 + hpt2,
+                            data = DataSet,
+                            family = cox,
+                            verbose = T)</code></pre>
+<pre><code>## Warning in fitter(x, y, ...): Ran out of iterations and did not converge</code></pre>
+<pre><code>## Warning in fitter(x[, xnames != i, drop = FALSE], y, ...): Ran out of
+## iterations and did not converge
+
+## Warning in fitter(x[, xnames != i, drop = FALSE], y, ...): Ran out of
+## iterations and did not converge
+
+## Warning in fitter(x[, xnames != i, drop = FALSE], y, ...): Ran out of
+## iterations and did not converge
+
+## Warning in fitter(x[, xnames != i, drop = FALSE], y, ...): Ran out of
+## iterations and did not converge</code></pre>
+<pre><code>## 
+##  Variable    Deviance    Power(s)
+## ------------------------------------------------</code></pre>
+<pre><code>## Warning in fitter(X, Y, ...): Ran out of iterations and did not converge</code></pre>
+<pre><code>## Warning in fitter(Xcov, Y, ...): Ran out of iterations and did not converge</code></pre>
+<pre><code>## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge</code></pre>
+<pre><code>## 
+## Cycle 1
+##  gcs              
+##              0        
+##              0       1
+##              0       -2
+##              0       -2 -2</code></pre>
+<pre><code>## Warning in fitter(X, Y, ...): Ran out of iterations and did not converge</code></pre>
+<pre><code>## Warning in fitter(Xcov, Y, ...): Ran out of iterations and did not converge</code></pre>
+<pre><code>## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge
+
+## Warning in fitter(cbind(x.fp, Xcov), Y, ...): Ran out of iterations and did
+## not converge</code></pre>
+<pre><code>## 
+##  age              
+##              0        
+##              0       1
+##              0       -2
+##              0       -2 -2</code></pre>
+<pre><code>## Warning in fitter(X, Y, ...): Ran out of iterations and did not converge</code></pre>
+<pre><code>## Warning in fitter(Xcov, Y, ...): Ran out of iterations and did not converge</code></pre>
+<pre><code>## 
+##  dm2              
+##              0        
+##              0       1
+##                              
+##                              </code></pre>
+<pre><code>## Warning in fitter(X, Y, ...): Ran out of iterations and did not converge
+
+## Warning in fitter(X, Y, ...): Ran out of iterations and did not converge</code></pre>
+<pre><code>## 
+##  hpt2                 
+##              0        
+##              0       1
+##                              
+##                              </code></pre>
+<pre><code>## Warning in fitter(x.work, y, ...): Ran out of iterations and did not
+## converge</code></pre>
+<pre><code>## 
+## Tansformation
+##      shift scale
+## gcs      0    10
+## age      0   100
+## dm2      0     1
+## hpt2     0     1
+## 
+## Fractional polynomials
+##      df.initial select alpha df.final power1 power2
+## gcs           4      1  0.05        1      1      .
+## age           4      1  0.05        1      1      .
+## dm2           1      1  0.05        1      1      .
+## hpt2          1      1  0.05        1      1      .
+## 
+## 
+## Transformations of covariates:
+##             formula
+## gcs   I((gcs/10)^1)
+## age  I((age/100)^1)
+## dm2             dm2
+## hpt2           hpt2
+## 
+## 
+## Deviance table:
+##           Resid. Dev
+## Null model    0
+## Linear model  0
+## Final model   0</code></pre>
+<pre class="r"><code>mfp_PrelimFinalModel</code></pre>
+<pre><code>## Call:
+## mfp(formula = Surv(time = Dur_Days, event = event == &quot;dead&quot;) ~ 
+##     fp(gcs, df = 4) + fp(age) + dm2 + hpt2, data = DataSet, family = cox, 
+##     verbose = T)
+## 
+## 
+## Deviance table:
+##           Resid. Dev
+## Null model    0
+## Linear model  0
+## Final model   0
+## 
+## Fractional polynomials:
+##      df.initial select alpha df.final power1 power2
+## gcs           4      1  0.05        1      1      .
+## age           4      1  0.05        1      1      .
+## dm2           1      1  0.05        1      1      .
+## hpt2          1      1  0.05        1      1      .
+## 
+## 
+## Transformations of covariates:
+##             formula
+## gcs   I((gcs/10)^1)
+## age  I((age/100)^1)
+## dm2             dm2
+## hpt2           hpt2
+## 
+##        coef exp(coef) se(coef)   z   p
+## gcs.1     0         1        0 NaN NaN
+## age.1     0         1        0 NaN NaN
+## dm2.1     0         1        0 NaN NaN
+## hpt2.1    0         1        0 NaN NaN
+## 
+## Likelihood ratio test=0  on 4 df, p=1 n= 262</code></pre>
+<pre class="r"><code>head(mfp_PrelimFinalModel$X)</code></pre>
+<pre><code>##   gcs age dm2 hpt2
+## 1  14  80   0    1
+## 2  11  74   0    0
+## 3  12  73   0    0
+## 4  13  54   0    1
+## 5  15  70   0    0
+## 6   8  66   0    1</code></pre>
+<pre class="r"><code>mfp_PrelimFinalModel$powers</code></pre>
+<pre><code>##      power1 power2
+## gcs       1     NA
+## age       1     NA
+## dm2       1     NA
+## hpt2      1     NA</code></pre>
+<pre class="r"><code>mfp_PrelimFinalModel$pvalues</code></pre>
+<pre><code>##      p.null p.lin p.FP power2 power4.1 power4.2
+## gcs       1     1    1     -2       -2       -2
+## age       1     1    1     -2       -2       -2
+## dm2       1    NA   NA     NA       NA       NA
+## hpt2      1    NA   NA     NA       NA       NA</code></pre>
+</div>
+<div id="model-assumption-checking---proportionality" class="section level3">
+<h3>Model Assumption Checking - Proportionality</h3>
+<ul>
+<li>KM Method</li>
+</ul>
+<pre class="r"><code>CPH_PrelimFinalModel &lt;- CPH_GCSAgeDMHPT
+PropKM_PrelimFinalModel &lt;- cox.zph(CPH_PrelimFinalModel,
+                                 transform = &quot;km&quot;,
+                                 global = T)
+PropKM_PrelimFinalModel</code></pre>
+<pre><code>##        rho chisq   p
+## gcs     NA   NaN NaN
+## age     NA   NaN NaN
+## dm2     NA   NaN NaN
+## hpt2    NA   NaN NaN
+## GLOBAL  NA   NaN NaN</code></pre>
+<pre class="r"><code>#plot(PropKM_PrelimFinalModel)</code></pre>
+<ul>
+<li>rank method</li>
+</ul>
+<pre class="r"><code>PropRank_PrelimFinalModel &lt;- cox.zph(CPH_PrelimFinalModel,
+                                 transform = &quot;rank&quot;,
+                                 global = T)
+PropRank_PrelimFinalModel</code></pre>
+<pre><code>##        rho chisq   p
+## gcs     NA   NaN NaN
+## age     NA   NaN NaN
+## dm2     NA   NaN NaN
+## hpt2    NA   NaN NaN
+## GLOBAL  NA   NaN NaN</code></pre>
+<pre class="r"><code>#plot(PropRank_PrelimFinalModel)</code></pre>
+<ul>
+<li>log method</li>
+</ul>
+<pre class="r"><code>PropLog_PrelimFinalModel &lt;- cox.zph(CPH_PrelimFinalModel,
+                                 transform = &quot;log&quot;,
+                                 global = T)
+PropLog_PrelimFinalModel</code></pre>
+<pre><code>##        rho chisq   p
+## gcs     NA   NaN NaN
+## age     NA   NaN NaN
+## dm2     NA   NaN NaN
+## hpt2    NA   NaN NaN
+## GLOBAL  NA   NaN NaN</code></pre>
+<pre class="r"><code>#plot(PropLog_PrelimFinalModel)</code></pre>
+</div>
+<div id="model-checking---residual" class="section level3">
+<h3>Model Checking - Residual</h3>
+<ul>
+<li>score residual</li>
+</ul>
+<pre class="r"><code>ScoreResid_PrelimFinalModel &lt;- resid(CPH_PrelimFinalModel,
+                                     type = &quot;score&quot;)
+kable(head(ScoreResid_PrelimFinalModel))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">gcs</th>
+<th align="left">age</th>
+<th align="left">dm2</th>
+<th align="left">hpt2</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>residual plot (score residual) for GCS (numerical)</li>
+</ul>
+<pre class="r"><code>plot(DataSet$gcs, ScoreResid_PrelimFinalModel[,2], ylab = &quot;Score Residual&quot;)</code></pre>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABUAAAAPACAMAAADDuCPrAAAA6lBMVEUAAAAAADoAAGYAOjoAOmYAOpAAZrY6AAA6OgA6Ojo6OmY6Zjo6ZmY6ZpA6ZrY6kJA6kLY6kNtmAABmADpmOgBmOjpmOmZmZjpmZmZmZpBmkJBmkLZmkNtmtrZmtttmtv+QOgCQZgCQZjqQZmaQZpCQkDqQkGaQkJCQkLaQtraQttuQtv+Q29uQ2/+2ZgC2Zjq2kDq2kGa2kLa2tpC2tra2ttu229u22/+2/9u2///bkDrbkGbbtmbbtpDbtrbbttvb25Db27bb29vb2//b/7bb/9vb////tmb/25D/27b/29v//7b//9v///+LUNwmAAAACXBIWXMAAB2HAAAdhwGP5fFlAAAgAElEQVR4nO3de2MTWZ6Y4VK3GwMZOguBjHqZgIdJsttsMONtN6Q9wAZ3gjHI3//rpKp0K10Mrh9HVXXUz/PHDNhW6chCb9f1VHEFQEjR9wAAciWgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABBAgoQJKAAQQIKECSgAEECChAkoABB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" width="672" /></p>
+<ul>
+<li>residual plot (score residual) for DM (categorical)</li>
+</ul>
+<pre class="r"><code>#plot(DataSet$dm2, ScoreResid_PrelimFinalModel[,2], ylab = &quot;Score Residual&quot;)
+#plot(DataSet$dm2, ScoreResid_PrelimFinalModel[,1], ylab = &quot;Score Residual&quot;)
+#plot(DataSet$dm2, ScoreResid_PrelimFinalModel, ylab = &quot;Score Residual&quot;)</code></pre>
+<ul>
+<li>schoenfel residual</li>
+</ul>
+<pre class="r"><code>SchoenResid_PrelimFinalModel &lt;- resid(CPH_PrelimFinalModel,
+                                      type = &quot;schoenfeld&quot;)
+kable(head(SchoenResid_PrelimFinalModel))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">gcs</th>
+<th align="right">age</th>
+<th align="right">dm2</th>
+<th align="right">hpt2</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<ul>
+<li>martingale residual</li>
+<li>scaled schoenfeld residual</li>
+<li>dfbeta residual</li>
+</ul>
+</div>
+<div id="inference" class="section level3">
+<h3>Inference</h3>
+<pre class="r"><code>augment(CPH_PrelimFinalModel,
+        data = DataSet)</code></pre>
+<pre><code>## # A tibble: 262 x 19
+##    id        sex    race doa        dod          gcs   sbp   dbp   age
+##    &lt;chr&gt; &lt;dbl+l&gt; &lt;dbl+l&gt; &lt;date&gt;     &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 B040~ 2 [fem~ 1 [mal~ 2012-05-23 2012-05-29    14   108    99    80
+##  2 A076~ 2 [fem~ 1 [mal~ 2011-10-05 2011-10-10    11   126    70    74
+##  3 A170~ 1 [mal~ 4 [oth~ 2011-02-07 2011-02-25    12   167    71    73
+##  4 B459~ 1 [mal~ 1 [mal~ 2011-03-06 2011-03-29    13   172   100    54
+##  5 B494~ 1 [mal~ 1 [mal~ 2012-06-08 2012-06-11    15   160    88    70
+##  6 B481~ 2 [fem~ 1 [mal~ 2011-12-23 2012-01-12     8   173    95    66
+##  7 A071~ 1 [mal~ 1 [mal~ 2011-04-17 2011-04-21    15   120    82    25
+##  8 A081~ 1 [mal~ 1 [mal~ 2012-02-04 2012-02-06    15   143    76    56
+##  9 B480~ 2 [fem~ 1 [mal~ 2011-12-19 2012-01-01    11   169    92    55
+## 10 B283~ 1 [mal~ 1 [mal~ 2011-11-15 2011-11-21    11   173   123    29
+## # ... with 252 more rows, and 10 more variables: event &lt;dbl+lbl&gt;,
+## #   dm2 &lt;dbl+lbl&gt;, hpt2 &lt;dbl+lbl&gt;, race2 &lt;dbl+lbl&gt;, event_s &lt;dbl&gt;,
+## #   SBP_Cat &lt;fct&gt;, Dur_Days &lt;dbl&gt;, .fitted &lt;dbl&gt;, .se.fit &lt;dbl&gt;,
+## #   .resid &lt;dbl&gt;</code></pre>
+</div>
+</div>
+</div>
+<div id="prediction" class="section level1">
+<h1>Prediction</h1>
+<div id="create-new-data" class="section level2">
+<h2>Create New Data</h2>
+<pre class="r"><code>NewDS &lt;- expand.grid(gcs = c(mean(DataSet$gcs)),
+                     age = c(40, 50, 60),
+                     dm2 = c(&quot;no&quot;, &quot;yes&quot;),
+                     hpt2 = c(&quot;no&quot;, &quot;yes&quot;))
+kable(NewDS)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">gcs ag</th>
+<th>e dm2</th>
+<th align="right">hpt</th>
+<th align="left">2</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">12.01908</td>
+<td>40</td>
+<td align="right">no</td>
+<td align="left">no</td>
+</tr>
+<tr class="even">
+<td align="right">12.01908</td>
+<td>50</td>
+<td align="right">no</td>
+<td align="left">no</td>
+</tr>
+<tr class="odd">
+<td align="right">12.01908</td>
+<td>60</td>
+<td align="right">no</td>
+<td align="left">no</td>
+</tr>
+<tr class="even">
+<td align="right">12.01908</td>
+<td>40</td>
+<td align="right">yes</td>
+<td align="left">no</td>
+</tr>
+<tr class="odd">
+<td align="right">12.01908</td>
+<td>50</td>
+<td align="right">yes</td>
+<td align="left">no</td>
+</tr>
+<tr class="even">
+<td align="right">12.01908</td>
+<td>60</td>
+<td align="right">yes</td>
+<td align="left">no</td>
+</tr>
+<tr class="odd">
+<td align="right">12.01908</td>
+<td>40</td>
+<td align="right">no</td>
+<td align="left">yes</td>
+</tr>
+<tr class="even">
+<td align="right">12.01908</td>
+<td>50</td>
+<td align="right">no</td>
+<td align="left">yes</td>
+</tr>
+<tr class="odd">
+<td align="right">12.01908</td>
+<td>60</td>
+<td align="right">no</td>
+<td align="left">yes</td>
+</tr>
+<tr class="even">
+<td align="right">12.01908</td>
+<td>40</td>
+<td align="right">yes</td>
+<td align="left">yes</td>
+</tr>
+<tr class="odd">
+<td align="right">12.01908</td>
+<td>50</td>
+<td align="right">yes</td>
+<td align="left">yes</td>
+</tr>
+<tr class="even">
+<td align="right">12.01908</td>
+<td>60</td>
+<td align="right">yes</td>
+<td align="left">yes</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 
