@@ -366,9 +366,45 @@ kable(tidy(KM_GCS))
 
 # Multivariable Analysis
 
-## Cox PH - IV - GCS & DM2
+## Predictor - IV - gcs, age, dm, hpt 
+
+### Cox PH 
+
+```{r}
+CPH_GCSAgeDMHPT <- coxph(Surv(time = Dur_Days,
+                              event == "dead") ~ gcs + age + dm2 + hpt2,
+                         data = DataSet)
+summary(CPH_GCSAgeDMHPT)
+kable(tidy(CPH_GCSAgeDMHPT))
+```
 
 
+### Interaction gcs:age
+
+```{r}
+CPH_GCSAgeDMHPT_IntGCSAge <- coxph(Surv(time = Dur_Days,
+                              event == "dead") ~ gcs + age + dm2 + hpt2 + gcs:age,
+                         data = DataSet)
+summary(CPH_GCSAgeDMHPT_IntGCSAge)
+kable(tidy(CPH_GCSAgeDMHPT_IntGCSAge))
+```
+
+### Interaction dm:dpt
+
+- model with interaction
+```{r}
+CPH_GCSAgeDMHPT_IntDMHpt <- coxph(Surv(time = Dur_Days,
+                              event == "dead") ~ gcs + age + dm2 + hpt2 + dm2:hpt2,
+                         data = DataSet)
+summary(CPH_GCSAgeDMHPT_IntDMHpt)
+kable(tidy(CPH_GCSAgeDMHPT_IntDMHpt))
+```
+
+- compare model with interaction using anova
+
+```{r}
+anova(CPH_GCSAgeDMHPT_IntDMHpt, CPH_GCSAgeDMHPT, test = "chisq")
+```
 
 
 
