@@ -33,9 +33,18 @@ library(survminer)
 
 ```{r "Dataset", message=FALSE}
 DataSet <- read_dta("stroke_outcome.dta")
+```
+
+### Revert Categorical Data
+
+```{r, message=FALSE}
 DataSet <- DataSet %>%
   mutate_if(is.labelled, funs(as_factor(.)))
 kable(head(DataSet))
+```
+
+
+```{r "Dataset", message=FALSE}
 ```
 
 alternatively
@@ -52,6 +61,26 @@ DataSet2 <- DataSet %>%
          event_s = as_factor(event_s))
 kable(head(DataSet2))
 ```
+
+### Recode Numerical Data to Categorical Data
+
+- SBP
+  - explore SBP (to set cut off point)
+
+```{r}
+summary(DataSet$sbp)
+```
+
+  - set sbp cut off as <= 140, 141 - 160, >160
+  
+```{r}
+DataSet <- DataSet %>%
+  mutate(SBP_Cat = cut(DataSet$sbp,
+                       c(0,140,160,300),
+                       labels = c("140 and below", "141-160", "161 and above")))
+```
+  
+
 
 # Descriptive Analysis and Data Exploration
 
@@ -129,6 +158,20 @@ ggplot(DataSet, aes(x=factor(event), fill=factor(event))) +
 
 ```
 
+
+- recategorized numerical data
+
+```{r}
+DataSet %>%
+  count(event, SBP_Cat) %>%
+  kable()
+
+ggplot(DataSet, aes(x=factor(event), fill=factor(event))) +
+  geom_bar() +
+  facet_wrap(~SBP_Cat)
+```
+
+
 # Univariable
 
 ## Overall Model
@@ -155,6 +198,16 @@ ggsurvplot(Overall_KM,
 ```
 
 ## Univariable - IV - gender
+
+### Cox PH Estimate
+
+```{r}
+#CPH_gender <- coxph(Surv(time = Dur_Days, event == "dead") ~ sex,
+#                     data = DataSet)
+#summary(CPH_gender)
+#kable(tidy(CPH_gender))
+```
+
 
 ### KM Estimate
 
@@ -219,14 +272,101 @@ estimate time of survival at times = 20, 40 and 60 units of time
 summary(KM_DM, times = c(20, 40, 60))
 ```
 
+### Compare Survival Estimate - Log Rank Test
+
+```{r}
+LogRank_DM <- survdiff(Surv(time = Dur_Days, event == "dead") ~ dm2,
+                       data = DataSet,
+                       rho = 0)
+LogRank_DM
+kable(tidy(LogRank_DM))
+```
+
+p < 0.05, there is significant different between dm2 yes and dm2 no
+
+### Compare Survival Estimate - Peto-peto
+
+```{r}
+Peto_DM <- survdiff(Surv(time = Dur_Days, event == "dead") ~ dm2,
+                       data = DataSet,
+                       rho = 1)
+Peto_DM
+kable(tidy(Peto_DM))
+```
+
+p < 0.05, there is significant different between dm2 yes and dm2 no
+
+
+## Univariable - IV - SBP (Category)
+
+## Cox
+
+
+### KM Estimate
+
+```{r}
+KM_SBPCat <- survfit(Surv(time = Dur_Days, event == "dead") ~ SBP_Cat,
+                 data = DataSet,
+                 type = "kaplan-meier")
+summary(KM_SBPCat)
+kable(tidy(KM_SBPCat))
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(KM_SBPCat,
+           data = DataSet,
+           risk.table = T,
+           linetype = c(1,2,3),
+           pval = T)
+```
+
+p < 0.05, there is significant differenct between survival rate for SBP (Cat)
+
+## Univariable - IV - GCS (Numerical)
+
+### Cox PH Estimate
+
+Cox PH Estimate with efron method
+
+```{r}
+#CPH_GCS <- coxph(Surv(time = Dur_Days,
+#                      event == "dead") ~ gcs,
+#                 data = DataSet)
+#summary(CPH_GCS)
+#kable(tidy(CPH_GCS))
+```
+
+### KM Estimate
+
+```{r}
+KM_GCS <- survfit(Surv(time = Dur_Days,
+                       event == "dead") ~ gcs,
+                  data = DataSet)
+summary(KM_GCS)
+kable(tidy(KM_GCS))
+```
 
 
 
+## Univariable - IV - SBP (Numerical)
+
+### Cox PH Estimate
+
+```{r}
+#CPH_SBP <- coxph(Surv(time = Dur_Days,
+#                      event == "dead") ~ sbp,
+#                 data = DataSet)
+#summary(CPH_SBP)
+#kable(tidy(CPH_SBP))
+```
 
 
 
+# Multivariable Analysis
 
-
+## Cox PH - IV - GCS & DM2
 
 
 
