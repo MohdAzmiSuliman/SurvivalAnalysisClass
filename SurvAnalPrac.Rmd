@@ -27,6 +27,7 @@ library(ggplot2)
 library(survival)
 library(broom)
 library(survminer)
+library(mfp)
 ```
 
 ## Import Dataset
@@ -371,33 +372,33 @@ kable(tidy(KM_GCS))
 ### Cox PH 
 
 ```{r}
-CPH_GCSAgeDMHPT <- coxph(Surv(time = Dur_Days,
-                              event == "dead") ~ gcs + age + dm2 + hpt2,
-                         data = DataSet)
-summary(CPH_GCSAgeDMHPT)
-kable(tidy(CPH_GCSAgeDMHPT))
+#CPH_GCSAgeDMHPT <- coxph(Surv(time = Dur_Days,
+#                              event == "dead") ~ gcs + age + dm2 + hpt2,
+#                         data = DataSet)
+#summary(CPH_GCSAgeDMHPT)
+#kable(tidy(CPH_GCSAgeDMHPT))
 ```
 
 
 ### Interaction gcs:age
 
 ```{r}
-CPH_GCSAgeDMHPT_IntGCSAge <- coxph(Surv(time = Dur_Days,
-                              event == "dead") ~ gcs + age + dm2 + hpt2 + gcs:age,
-                         data = DataSet)
-summary(CPH_GCSAgeDMHPT_IntGCSAge)
-kable(tidy(CPH_GCSAgeDMHPT_IntGCSAge))
+#CPH_GCSAgeDMHPT_IntGCSAge <- coxph(Surv(time = Dur_Days,
+#                              event == "dead") ~ gcs + age + dm2 + hpt2 + gcs:age,
+#                         data = DataSet)
+#summary(CPH_GCSAgeDMHPT_IntGCSAge)
+#kable(tidy(CPH_GCSAgeDMHPT_IntGCSAge))
 ```
 
 ### Interaction dm:dpt
 
 - model with interaction
 ```{r}
-CPH_GCSAgeDMHPT_IntDMHpt <- coxph(Surv(time = Dur_Days,
-                              event == "dead") ~ gcs + age + dm2 + hpt2 + dm2:hpt2,
-                         data = DataSet)
-summary(CPH_GCSAgeDMHPT_IntDMHpt)
-kable(tidy(CPH_GCSAgeDMHPT_IntDMHpt))
+#CPH_GCSAgeDMHPT_IntDMHpt <- coxph(Surv(time = Dur_Days,
+#                              event == "dead") ~ gcs + age + dm2 + hpt2 + dm2:hpt2,
+#                         data = DataSet)
+#summary(CPH_GCSAgeDMHPT_IntDMHpt)
+#kable(tidy(CPH_GCSAgeDMHPT_IntDMHpt))
 ```
 
 - compare model with interaction using anova
@@ -405,6 +406,121 @@ kable(tidy(CPH_GCSAgeDMHPT_IntDMHpt))
 ```{r}
 anova(CPH_GCSAgeDMHPT_IntDMHpt, CPH_GCSAgeDMHPT, test = "chisq")
 ```
+
+interaction term not significant
+
+# Final Model
+
+## Prelim Final Model
+
+predictors: gcs, age, dm, hpt
+
+### Model Assumption Checking - Linearity in Hazard Regression Assumption
+
+```{r}
+mfp_PrelimFinalModel <- mfp(Surv(time = Dur_Days,
+                                 event = event == "dead") ~ fp(gcs, df = 4) + fp(age) + dm2 + hpt2,
+                            data = DataSet,
+                            family = cox,
+                            verbose = T)
+```
+
+```{r}
+mfp_PrelimFinalModel
+```
+
+```{r}
+head(mfp_PrelimFinalModel$X)
+mfp_PrelimFinalModel$powers
+mfp_PrelimFinalModel$pvalues
+```
+
+### Model Assumption Checking - Proportionality
+
+- KM Method
+```{r}
+#CPH_PrelimFinalModel <- CPH_GCSAgeDMHPT
+PropKM_PrelimFinalModel <- cox.zph(CPH_PrelimFinalModel,
+                                 transform = "km",
+                                 global = T)
+PropKM_PrelimFinalModel
+plot(PropKM_PrelimFinalModel)
+```
+
+- rank method
+```{r}
+PropRank_PrelimFinalModel <- cox.zph(CPH_PrelimFinalModel,
+                                 transform = "rank",
+                                 global = T)
+PropRank_PrelimFinalModel
+plot(PropRank_PrelimFinalModel)
+```
+
+- log method
+```{r}
+#PropLog_PrelimFinalModel <- cox.zph(CPH_PrelimFinalModel,
+#                                 transform = "log",
+#                                 global = T)
+#PropLog_PrelimFinalModel
+#plot(PropLog_PrelimFinalModel)
+```
+
+### Model Checking - Residual
+
+- score residual
+```{r}
+ScoreResid_PrelimFinalModel <- resid(CPH_PrelimFinalModel,
+                                     type = "score")
+kable(head(ScoreResid_PrelimFinalModel))
+```
+
+- residual plot (score residual) for GCS (numerical)
+```{r}
+plot(DataSet$gcs, ScoreResid_PrelimFinalModel[,2], ylab = "Score Residual")
+```
+
+- residual plot (score residual) for DM (categorical)
+```{r}
+plot(DataSet$dm2, ScoreResid_PrelimFinalModel[,2], ylab = "Score Residual")
+plot(DataSet$dm2, ScoreResid_PrelimFinalModel[,1], ylab = "Score Residual")
+plot(DataSet$dm2, ScoreResid_PrelimFinalModel, ylab = "Score Residual")
+```
+
+
+- schoenfel residual
+```{r}
+SchoenResid_PrelimFinalModel <- resid(CPH_PrelimFinalModel,
+                                      type = "schoenfeld")
+kable(head(SchoenResid_PrelimFinalModel))
+```
+
+- martingale residual
+- scaled schoenfeld residual
+- dfbeta residual
+
+### Inference
+
+```{r}
+augment(CPH_PrelimFinalModel,
+        data = DataSet)
+```
+
+# Prediction
+
+## Create New Data
+
+```{r}
+NewDS <- expand.grid(gcs = c(mean(DataSet$gcs)),
+                     age = c(40, 50, 60),
+                     dm2 = c("no", "yes"),
+                     hpt2 = c("no", "yes"))
+kable(NewDS)
+```
+
+
+
+
+
 
 
 
