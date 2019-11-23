@@ -92,6 +92,8 @@ kable(summary(DataSet))
 kable(describe(DataSet))
 ```
 
+## Calculate Duration
+
 count duration between 2 date
 
 ```{r}
@@ -157,12 +159,6 @@ ggplot(DataSet, aes(x=factor(event), fill=factor(event))) +
   geom_bar() +
   facet_wrap(~race2)
 
-```
-
-
-- recategorized numerical data
-
-```{r}
 DataSet %>%
   count(event, SBP_Cat) %>%
   kable()
@@ -196,18 +192,35 @@ ggsurvplot(Overall_KM,
            risk.table = T)
 ```
 
-## Univariable - IV - gender
+### Estimate Survival Function
 
-### Cox PH Estimate
+*Find Duration from given Probability*
+
+Estimate the survival duration at 25^th^, median and 75^th^ percentile
 
 ```{r}
-CPH_gender <- coxph(Surv(time = Dur_Days, event == "dead") ~ sex,
-                     data = DataSet)
-CPH_gender
-summary(CPH_gender)
-kable(tidy(CPH_gender))
+kable(quantile(Overall_KM, probs = c(0.25, 0.5, 0.75)))
 ```
 
+to understand this result, compare with KM Survival Estimate. For example, to estimate the survival duration at median,
+
+- refer KM Survival Estimate, find the duration at survival probability = 0.5
+  - at survival probability = 0.5, the duration was 22 days
+- similarly, to find the duration at upper limit and lower limit, find the duration at survival probability upper limit 0.5 and lower limit 0.5
+  - at survival probability at lower limit = 0.5, the duration was 12 days
+  - there was however no survival probability at lower limit = 0.5
+
+*Find Probability from given Duration*
+
+Estimate the survival probability at duration 20 days, 40 days and 60 days
+
+```{r}
+summary(Overall_KM, times = c(20,40,60))
+```
+
+
+
+## Univariable - IV - gender
 
 ### KM Estimate
 
@@ -230,6 +243,32 @@ ggsurvplot(KM_gender,
 ```
 
 p = 0.41, thus no significant difference between survival in male or female.
+
+### Log Rank Test
+
+to compare survival estimate between male and female, log rank test can be use
+
+```{r}
+LR_gender <- survdiff(Surv(time = Dur_Days, event =="dead") ~ sex,
+                      data = DataSet,
+                      rho = 0)
+LR_gender
+```
+
+note that the p-value from log rank test is equal to p-value in KM plot. it is because the KM Plot compare using log rank test!
+
+
+
+### Cox PH Estimate
+
+```{r}
+CPH_gender <- coxph(Surv(time = Dur_Days, event == "dead") ~ sex,
+                     data = DataSet)
+CPH_gender
+summary(CPH_gender)
+kable(tidy(CPH_gender))
+```
+
 
 ## Univariable - IV - DM
 
@@ -299,7 +338,7 @@ p < 0.05, there is significant different between dm2 yes and dm2 no
 
 ## Univariable - IV - SBP (Category)
 
-## Cox
+### Cox
 
 
 ### KM Estimate
@@ -469,7 +508,7 @@ PropLog_PrelimFinalModel
 #plot(PropLog_PrelimFinalModel)
 ```
 
-### Model Checking - Residual
+### Model Checking - Residual (Score)
 
 - score residual
 ```{r}
@@ -490,24 +529,87 @@ plot(DataSet$dm2, ScoreResid_PrelimFinalModel[,1], ylab = "Score Residual")
 plot(DataSet$dm2, ScoreResid_PrelimFinalModel, ylab = "Score Residual")
 ```
 
+### Model Checking - Residual (Martingale)
 
-- schoenfel residual
+- martingale residual
+
+```{r}
+MartinResid_PrelimFinalModel <- resid(CPH_PrelimFinalModel,
+                                      type = "martingale")
+kable(head(MartinResid_PrelimFinalModel))
+```
+
+- residual plot for martingale
+
+```{r}
+plot(DataSet$age,
+     MartinResid_PrelimFinalModel,
+     ylab = "Martingale Residual for Age")
+plot(DataSet$sex,
+     MartinResid_PrelimFinalModel,
+     ylab = "Martingale Residual for Gender")
+plot(MartinResid_PrelimFinalModel,
+     type = "h",
+     main = "Martingale Residuals",
+     ylab = "dfbetas",
+     lwd = 2)
+```
+
+### Martingale Residual - Alternative
+
+```{r}
+augment(CPH_PrelimFinalModel,
+        data = DataSet)
+```
+
+calculate fitted (predicted), and martingale resid
+
+
+### Model Checking - Residual (Schoenfeld)
+
+- schoenfeld residual
 ```{r}
 SchoenResid_PrelimFinalModel <- resid(CPH_PrelimFinalModel,
                                       type = "schoenfeld")
 kable(head(SchoenResid_PrelimFinalModel))
 ```
 
-- martingale residual
-- scaled schoenfeld residual
-- dfbeta residual
 
-### Inference
+### Model Checking - Residual (Scaled Schoenfeld)
+
+- scaled schoenfeld residual
 
 ```{r}
-augment(CPH_PrelimFinalModel,
-        data = DataSet)
+SSResid_PrelimFinalModel <- resid(CPH_PrelimFinalModel,
+                                  type = "scaledsch")
+kable(head(SSResid_PrelimFinalModel))
 ```
+
+### Model Checking - Residual (dfbeta)
+
+- dfbeta residual
+
+```{r}
+dfbResid_PrelimFinalModel <- resid(CPH_PrelimFinalModel,
+                                   type = "dfbeta")
+kable(head(dfbResid_PrelimFinalModel))
+```
+
+- plot for dfbeta
+
+```{r}
+plot(DataSet$age,
+     dfbResid_PrelimFinalModel[,2],
+     main = "Dfbetas for Age",
+     ylab = "dfbetas")
+plot(DataSet$gcs,
+     dfbResid_PrelimFinalModel[,2],
+     type = "h",
+     main = "Dfbetas for GCS",
+     ylab = "dfbetas")
+```
+
+
 
 # Prediction
 
@@ -524,9 +626,90 @@ kable(NewDS)
 
 ## Average Value for All Predictor
 
+## Predict with LP
+
+calculate predicted estimate for data from new dataset
+
+```{r}
+kable(predict(CPH_PrelimFinalModel,
+        newdata = NewDS,
+        type = "lp"))
+```
+
+alternatively, but didn't separate from the dataset
+
+```{r}
+kable(augment(CPH_PrelimFinalModel,
+              newdata = NewDS))
+```
+
+## Predict with Risk Score
+
+```{r}
+kable(predict(CPH_PrelimFinalModel,
+        newdata = NewDS,
+        type = "risk"))
+```
+
+alternatively, but didnt separate from the dataset
+
+```{r}
+kable(augment(CPH_PrelimFinalModel,
+              newdata = NewDS,
+              type.predict = "risk"))
+```
+
+## Another Prediction
+
+add event = dead, and follow up time as 20, 40 and 50 days
+
+```{r}
+
+NewDS2 <- expand.grid(event = 'dead', Dur_Days = c(20, 40, 50))
+NewDS3 <- data.frame(NewDS, NewDS2)
+```
+
+```{r}
+Predicted_Expected <- predict(CPH_PrelimFinalModel,
+                              newdata = NewDS3,
+                              type = "expected")
+kable(cbind(NewDS3, Predicted_Expected))
+```
+
+## Predict Survival Probability
+
+to predict survival probability, need to calculate hazard function and linear predictor
+
+$h(T) = h_0(t) * exp^(^/b^X)$
 
 
+- linear predictor function ($exp^(^/b^x)$)
 
+```{r}
+LinearPredFunc <- predict(CPH_PrelimFinalModel,
+                          newdata = NewDS,
+                          type = "lp")
+```
 
+- base hazard function ($h_0(t)$)
+
+```{r}
+BaseHF <- basehaz(CPH_PrelimFinalModel)
+```
+
+to predict hazard at time 14 days, refer base hazard function at day 14
+
+```{r}
+kable(BaseHF)
+```
+
+at day 14, base hazard function = 0.3067
+
+to calculated predicted value, times the linear predictor funtion with base hazard function
+
+```{r}
+Pred_Value <- 0.3067*exp(LinearPredFunc)
+kable(Pred_Value)
+```
 
 
