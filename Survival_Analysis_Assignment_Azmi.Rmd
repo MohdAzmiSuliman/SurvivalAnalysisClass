@@ -99,6 +99,7 @@ WHASDS2 <- WHASDS2 %>%
 
 ## Summary
 
+summary all data
 ```{r}
 WHASDS2 %>%
   select_if(is.numeric) %>%
@@ -108,20 +109,159 @@ WHASDS2 %>%
   summary()
 ```
 
+summary all data, group by follow up status **to update**
+```{r}
+WHASDS2 %>%
+  group_by(FUpStatus) %>%
+  select_if(is.numeric) %>%
+  summary()
+WHASDS2 %>%
+  group_by(FUpStatus) %>%
+  select_if(is.factor) %>%
+  summary()
+```
+
+
 ## Visualization
 
-barchart
+barchart for all categorical data
 ```{r}
 ggplot(WHASDS2, aes(x=FUpStatus, fill=FUpStatus)) +
   geom_bar()
 ggplot(WHASDS2, aes(x=gender, fill=gender)) +
+  geom_bar()
+ggplot(WHASDS2, aes(x=BMICat, fill=BMICat)) +
+  geom_bar()
+ggplot(WHASDS2, aes(x=CardioShock, fill=CardioShock)) +
+  geom_bar()
+ggplot(WHASDS2, aes(x=ConHeartCx, fill=ConHeartCx)) +
+  geom_bar()
+ggplot(WHASDS2, aes(x=CompHeartBlock, fill=CompHeartBlock)) +
+  geom_bar()
+ggplot(WHASDS2, aes(x=MIOrder, fill=MIOrder)) +
+  geom_bar()
+ggplot(WHASDS2, aes(x=MIType, fill=MIType)) +
+  geom_bar()
+ggplot(WHASDS2, aes(x=DischargeStatus, fill=DischargeStatus)) +
+  geom_bar()
+```
+
+histogram for all numerical data
+```{r}
+ggplot(WHASDS2, aes(dur_year)) +
+  geom_histogram(binwidth=0.25, colour="black", fill="white")
+ggplot(WHASDS2, aes(age)) +
+  geom_histogram(binwidth=2, colour="black", fill="white")
+ggplot(WHASDS2, aes(hr)) +
+  geom_histogram(binwidth=5, colour="black", fill="white")
+ggplot(WHASDS2, aes(sysbp)) +
+  geom_histogram(binwidth=5, colour="black", fill="white")
+ggplot(WHASDS2, aes(diasbp)) +
+  geom_histogram(binwidth=5, colour="black", fill="white")
+ggplot(WHASDS2, aes(bmi)) +
+  geom_histogram(binwidth=1, colour="black", fill="white")
+```
+
+Barchart for all categorical data, divide by follow up status
+```{r}
+ggplot(WHASDS2, aes(x=gender, fill=gender)) +
   geom_bar() +
   facet_wrap(~FUpStatus)
-ggplot(WHASDS2, aes(x=age, fill=age)) +
-  geom_histogram() +
+ggplot(WHASDS2, aes(x=BMICat, fill=BMICat)) +
+  geom_bar() +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(x=CardioShock, fill=CardioShock)) +
+  geom_bar() +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(x=ConHeartCx, fill=ConHeartCx)) +
+  geom_bar() +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(x=CompHeartBlock, fill=CompHeartBlock)) +
+  geom_bar() +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(x=MIOrder, fill=MIOrder)) +
+  geom_bar() +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(x=MIType, fill=MIType)) +
+  geom_bar() +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(x=DischargeStatus, fill=DischargeStatus)) +
+  geom_bar() +
+  facet_wrap(~FUpStatus)
+```
+
+histogram for all numerical data, divide by follow up status
+```{r}
+ggplot(WHASDS2, aes(age)) +
+  geom_histogram(binwidth=2.5, colour="black", fill="white") +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(hr)) +
+  geom_histogram(binwidth=5, colour="black", fill="white") +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(sysbp)) +
+  geom_histogram(binwidth=5, colour="black", fill="white") +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(diasbp)) +
+  geom_histogram(binwidth=5, colour="black", fill="white") +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(bmi)) +
+  geom_histogram(binwidth=1, colour="black", fill="white") +
   facet_wrap(~FUpStatus)
 ```
 
 
 
+# Univariable
 
+## Overall
+
+### KM Estimate
+
+```{r}
+Overall_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~1,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+summary(Overall_KM)
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(Overall_KM,
+           data = WHASDS2,
+           risk.table = T)
+```
+
+estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
+
+```{r}
+quantile(Overall_KM, probs = c(0.25, 0.5, 0.75))
+```
+
+
+## Each covariate
+
+### KM Estimate
+
+```{r}
+Overall_gender <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~gender,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+summary(Overall_gender)
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(Overall_gender,
+           data = WHASDS2,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
+
+```{r}
+quantile(Overall_gender, probs = c(0.25, 0.5, 0.75))
+```
