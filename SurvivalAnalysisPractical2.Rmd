@@ -1,0 +1,33 @@
+---
+title: "Practical with Cancer Registry (Nasr)"
+author: "Mohd Azmi"
+date: "24/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preface
+
+## Library
+
+load list of library needed for this exercise
+
+```{r}
+library(foreign)
+library(tidyverse)
+library(knitr)
+```
+
+
+## import dataset
+
+import dataset into object name WHAS500
+
+```{r}
+whas500 <- read.spss("whas500.sav", use.value.label=T, to.data.frame=T)
+view(whas500)
+```
+

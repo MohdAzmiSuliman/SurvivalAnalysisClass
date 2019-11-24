@@ -1,0 +1,120 @@
+---
+title: "Survival Analysis"
+author: "Dr MOHD KHAIRUL ANWAR KAMDI"
+date: "11/24/2019"
+output: html_document
+---
+
+#library
+```{r}
+library(tidyverse)
+library(survival)
+library(haven)
+library(lubridate)
+library(ggplot2)
+library(survival) 
+library(survminer)
+```
+
+#import
+```{r}
+whas500ds <- read_spss("whas500.sav")
+```
+
+#mutate
+```{r}
+whas <- whas500ds %>% mutate(gender1 = factor(gender, labels = c("male","female")),
+                             miord1 = factor(miord, labels= c("first", "recurrent")),
+                             mitype1 = factor(mitype, labels=c ("non Q-wave" , "Q-wave")),
+                             event = factor(fstat, labels=c("Alive","Dead")))
+whas
+```
+
+#Select
+```{r}
+whas2 <- whas %>% select(id,event,admitdate,fdate,age,bmi,sysbp,gender1,miord1,mitype1)
+whas2
+```
+
+#Descriptive study
+
+```{r}
+summary(whas2)
+```
+
+Most of the sample was dead, male, 1st MI event and non Q-wave. Mean age was 69.85 years old, mean BMI WAS 26.61 kg/m2, mean systolic BP was 144.7mmHg
+
+#calculate duration
+```{r}
+whas2$dur <- as.duration(whas2$admitdate %--% whas2$fdate)
+whas2$dur_year <- whas2$dur / dyears(1)
+summary(whas2)
+```
+
+#Visualisation
+
+```{r}
+ggplot(whas2, aes(x=factor(event), fill=factor(event))) + 
+  geom_bar()
+ggplot(whas2, aes(x=factor(event), fill=factor(event))) + 
+  geom_bar()+
+  facet_wrap(~gender1)
+ggplot(whas2, aes(x=factor(gender1), fill=factor(gender1))) + 
+  geom_bar()+
+  facet_wrap(~event)
+
+```
+
+#Univariable analysis -overall
+
+## kaplan meier estimate
+
+Overall
+```{r}
+overall_km <-survfit(Surv(time=dur_year,event=="Dead")~1,
+                     data=whas2,
+                     type="kaplan-meier")
+summary(overall_km)
+```
+
+## KM plot
+
+```{r}
+ggsurvplot(overall_km, data=whas2,risk.table=T)
+```
+
+## median surv time
+
+```{r}
+quantile(overall_km, probs = 0.5)
+```
+
+
+# Univariable Analysis-gender
+
+##KM Estimate
+
+gender
+```{r}
+gender_km <-survfit(Surv(time=dur_year,event=="Dead")~gender1,
+                     data=whas2,
+                     type="kaplan-meier")
+summary(gender_km)
+```
+
+##KM Plot
+
+```{r}
+ggsurvplot(gender_km, data=whas2,risk.table=T, linetype = c(1,2), pval = 1)
+```
+
+
+##Median Survival Time
+
+```{r}
+quantile(gender_km, probs = 0.5)
+```
+
+Median survival time for male = 5.92 years (95% CI=4.58, NA) while median survival time for female was = 3.61 years (95% CI=2.48, 4.46)
+
+
