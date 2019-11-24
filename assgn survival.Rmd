@@ -19,6 +19,7 @@ library(survminer)
 #import
 ```{r}
 whas500ds <- read_spss("whas500.sav")
+whas500ds
 ```
 
 #mutate

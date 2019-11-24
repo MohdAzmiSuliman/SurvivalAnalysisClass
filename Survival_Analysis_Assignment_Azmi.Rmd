@@ -1,0 +1,127 @@
+---
+title: "Survival Analysis Practical"
+output: html_notebook
+---
+
+# Preface
+
+## Library
+
+```{r}
+library(pacman)
+p_load(haven, dplyr, psych, lubridate, knitr, ggplot2, survival, broom, survminer, mfp)
+```
+
+## Dataset
+
+Import dataset
+```{r}
+WHASDS <- read_spss("whas500.sav")
+WHASDS
+```
+
+Convert to categorical data
+```{r}
+WHASDS2 <- WHASDS %>%
+  mutate(gender = factor(gender,
+                         labels = c("male", "female")),
+         BMICat = cut(bmi, c(0, 20, 25, 30, 100),
+                      labels = c("Underweight", "Normal", "Overweight", "Obese")),
+         cvd = factor(cvd,
+                      labels = c("No", "Yes")),
+         AtrFib = factor(afb,
+                         labels = c("No", "Yes")),
+         CardioShock = factor(cvd,
+                              labels = c("No", "Yes")),
+         ConHeartCx = factor(chf,
+                             labels = c("No", "Yes")),
+         CompHeartBlock = factor(av3,
+                                 labels = c("No", "Yes")),
+         MIOrder = factor(miord,
+                          labels = c("first", "recurrent")),
+         MIType = factor(mitype,
+                         labels = c("non Q-wave", "Q-wave")),
+         DischargeStatus = factor(dstat,
+                                  labels = c("alive", "dead")),
+         FUpStatus = factor(fstat,
+                            labels = c("alive", "dead"))) %>%
+  select (id,
+          FUpStatus, 
+          age,
+          gender,
+          hr,
+          sysbp,
+          diasbp,
+          bmi,
+          BMICat,
+          CardioShock,
+          ConHeartCx,
+          CompHeartBlock,
+          MIOrder,
+          MIType,
+          admitdate,
+          disdate,
+          fdate,
+          DischargeStatus)
+WHASDS2
+```
+
+
+calculate duration
+```{r}
+WHASDS2 <- WHASDS2 %>%
+  mutate(dur = as.duration(WHASDS2$admitdate %--% WHASDS2$fdate),
+         dur_year = dur/dyears(1)) %>%
+  select (id,
+          FUpStatus,
+          dur_year,
+          age,
+          gender,
+          hr,
+          sysbp,
+          diasbp,
+          bmi,
+          BMICat,
+          CardioShock,
+          ConHeartCx,
+          CompHeartBlock,
+          MIOrder,
+          MIType,
+          admitdate,
+          disdate,
+          fdate,
+          DischargeStatus,
+          dur)
+```
+
+
+# Descriptive Study
+
+## Summary
+
+```{r}
+WHASDS2 %>%
+  select_if(is.numeric) %>%
+  summary()
+WHASDS2 %>%
+  select_if(is.factor) %>%
+  summary()
+```
+
+## Visualization
+
+barchart
+```{r}
+ggplot(WHASDS2, aes(x=FUpStatus, fill=FUpStatus)) +
+  geom_bar()
+ggplot(WHASDS2, aes(x=gender, fill=gender)) +
+  geom_bar() +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(x=age, fill=age)) +
+  geom_histogram() +
+  facet_wrap(~FUpStatus)
+```
+
+
+
+
