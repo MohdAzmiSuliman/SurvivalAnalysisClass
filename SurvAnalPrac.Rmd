@@ -551,7 +551,7 @@ plot(DataSet$sex,
 plot(MartinResid_PrelimFinalModel,
      type = "h",
      main = "Martingale Residuals",
-     ylab = "dfbetas",
+     ylab = "Martingale Residuals",
      lwd = 2)
 ```
 
