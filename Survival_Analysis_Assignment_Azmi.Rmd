@@ -239,29 +239,185 @@ quantile(Overall_KM, probs = c(0.25, 0.5, 0.75))
 ```
 
 
-## Each covariate
+
+## Univariable - Age
+
+### Cox Proportional Hazard
+
+```{r}
+age_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~age,
+                 data = WHASDS2)
+age_CPH
+tidy(age_CPH)
+```
+
+## Univariable - Gender
 
 ### KM Estimate
 
 ```{r}
-Overall_gender <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~gender,
+gender_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~gender,
                       data = WHASDS2,
                       type = "kaplan-meier")
-summary(Overall_gender)
+summary(gender_KM)
 ```
 
 ### KM Plot
 
 ```{r}
-ggsurvplot(Overall_gender,
+ggsurvplot(gender_KM,
            data = WHASDS2,
            risk.table = T,
            linetype = c(1,2),
            pval = T)
 ```
 
+### Log Rank Test
+
+```{r}
+gender_LR <- survdiff(Surv(time = dur_year, FUpStatus == "dead") ~gender,
+                      data = WHASDS2,
+                      rho = 0)
+gender_LR
+```
+
+### Survival Time Estimation
+
 estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
 
 ```{r}
-quantile(Overall_gender, probs = c(0.25, 0.5, 0.75))
+quantile(gender_KM, probs = c(0.25, 0.5, 0.75))
 ```
+
+## Univariable - Heart Rate
+
+### Cox Proportional Hazard
+
+```{r}
+hr_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~hr,
+                 data = WHASDS2)
+hr_CPH
+tidy(hr_CPH)
+```
+
+
+
+## Univariable - Systolic BP
+
+### Cox Proportional Hazard
+
+```{r}
+SBP_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~sysbp,
+                 data = WHASDS2)
+SBP_CPH
+tidy(SBP_CPH)
+```
+
+
+
+
+
+## Univariable - Diastolic BP
+
+### Cox Proportional Hazard
+
+```{r}
+DBP_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~diasbp,
+                 data = WHASDS2)
+DBP_CPH
+tidy(DBP_CPH)
+```
+
+
+
+
+
+## Univariable - BMI
+
+### Cox Proportional Hazard
+
+```{r}
+BMI_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~bmi,
+                 data = WHASDS2)
+BMI_CPH
+tidy(BMI_CPH)
+```
+
+## Univariable - BMI (Category)
+
+### KM Estimate
+
+```{r}
+BMICat_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~BMICat,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+summary(BMICat_KM)
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(BMICat_KM,
+           data = WHASDS2,
+           risk.table = T,
+           linetype = c(1,2,3,4),
+           pval = T)
+```
+
+### Log Rank Test
+
+```{r}
+BMICat_LR <- survdiff(Surv(time = dur_year, FUpStatus == "dead") ~BMICat,
+                      data = WHASDS2,
+                      rho = 0)
+BMICat_LR
+```
+
+
+estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
+
+```{r}
+quantile(BMICat_KM, probs = c(0.25, 0.5, 0.75))
+```
+
+
+## Univariable - Type of Cardiogenic Shcock
+
+### KM Estimate
+
+```{r}
+CardioShock_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~CardioShock,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+summary(CardioShock_KM)
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(CardioShock_KM,
+           data = WHASDS2,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+### Log Rank Test
+
+```{r}
+CardioShock_LR <- survdiff(Surv(time = dur_year, FUpStatus == "dead") ~CardioShock,
+                      data = WHASDS2,
+                      rho = 0)
+CardioShock_LR
+```
+
+
+estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
+
+```{r}
+quantile(CardioShock_KM, probs = c(0.25, 0.5, 0.75))
+```
+
+
+
+
