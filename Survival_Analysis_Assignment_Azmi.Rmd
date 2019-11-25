@@ -209,10 +209,6 @@ ggplot(WHASDS2, aes(bmi)) +
   facet_wrap(~FUpStatus)
 ```
 
-
-
-# Univariable
-
 ## Overall
 
 ### KM Estimate
@@ -221,7 +217,7 @@ ggplot(WHASDS2, aes(bmi)) +
 Overall_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~1,
                       data = WHASDS2,
                       type = "kaplan-meier")
-summary(Overall_KM)
+Overall_KM
 ```
 
 ### KM Plot
@@ -232,13 +228,22 @@ ggsurvplot(Overall_KM,
            risk.table = T)
 ```
 
+### Estimate survival time
+
 estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
 
 ```{r}
 quantile(Overall_KM, probs = c(0.25, 0.5, 0.75))
 ```
 
+### Survival Probability
 
+```{r}
+summary(Overall_KM, times = c(0.5, 1, 3, 5))
+```
+
+
+# Univariable
 
 ## Univariable - Age
 
@@ -280,6 +285,16 @@ gender_LR <- survdiff(Surv(time = dur_year, FUpStatus == "dead") ~gender,
                       rho = 0)
 gender_LR
 ```
+
+### Cox Proportional Hazard
+
+```{r}
+gender_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~gender,
+                 data = WHASDS2)
+gender_CPH
+tidy(gender_CPH)
+```
+
 
 ### Survival Time Estimation
 
@@ -374,6 +389,17 @@ BMICat_LR
 ```
 
 
+### Cox Proportional Hazard
+
+```{r}
+BMICat_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~BMICat,
+                 data = WHASDS2)
+BMICat_CPH
+tidy(BMICat_CPH)
+```
+
+### Survival Time Estimation
+
 estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
 
 ```{r}
@@ -381,7 +407,7 @@ quantile(BMICat_KM, probs = c(0.25, 0.5, 0.75))
 ```
 
 
-## Univariable - Type of Cardiogenic Shcock
+## Univariable - Type of Cardiogenic Shock
 
 ### KM Estimate
 
@@ -411,6 +437,17 @@ CardioShock_LR <- survdiff(Surv(time = dur_year, FUpStatus == "dead") ~CardioSho
 CardioShock_LR
 ```
 
+### Cox Proportional Hazard
+
+```{r}
+CardioShock_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~CardioShock,
+                 data = WHASDS2)
+CardioShock_CPH
+tidy(CardioShock_CPH)
+```
+
+
+### Survival Time Estimation
 
 estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
 
@@ -418,6 +455,232 @@ estimating survival time, at 25th percentile survival probability, median surviv
 quantile(CardioShock_KM, probs = c(0.25, 0.5, 0.75))
 ```
 
+## Univariable - Type of Congestive Heart Complication
+
+### KM Estimate
+
+```{r}
+CHF_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~ConHeartCx,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+summary(CHF_KM)
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(CHF_KM,
+           data = WHASDS2,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+### Log Rank Test
+
+```{r}
+CHF_LR <- survdiff(Surv(time = dur_year, FUpStatus == "dead") ~ConHeartCx,
+                      data = WHASDS2,
+                      rho = 0)
+CHF_LR
+```
+
+
+### Cox Proportional Hazard
+
+```{r}
+CHF_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~ConHeartCx,
+                 data = WHASDS2)
+CHF_CPH
+tidy(CHF_CPH)
+```
+
+
+### Survival Time Estimation at Q1, median and Q3 survival probability
+
+estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
+
+```{r}
+quantile(CHF_KM, probs = c(0.25, 0.5, 0.75))
+```
+
+
+## Univariable - Type of Complete Heart Block
+
+### KM Estimate
+
+```{r}
+CHB_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~CompHeartBlock,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+summary(CHB_KM)
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(CHB_KM,
+           data = WHASDS2,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+### Log Rank Test
+
+```{r}
+CHB_LR <- survdiff(Surv(time = dur_year, FUpStatus == "dead") ~CompHeartBlock,
+                      data = WHASDS2,
+                      rho = 0)
+CHB_LR
+```
+
+### Cox Proportional Hazard
+
+```{r}
+CHB_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~CompHeartBlock,
+                 data = WHASDS2)
+CHB_CPH
+tidy(CHB_CPH)
+```
+
+
+### Survival Time Estimation at Q1, median and Q3 survival probability
+
+estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
+
+```{r}
+quantile(CHB_KM, probs = c(0.25, 0.5, 0.75))
+```
 
 
 
+## Univariable - Type of MI Order
+
+### KM Estimate
+
+```{r}
+MIOrder_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~MIOrder,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+summary(MIOrder_KM)
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(MIOrder_KM,
+           data = WHASDS2,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+### Log Rank Test
+
+```{r}
+MIOrder_LR <- survdiff(Surv(time = dur_year, FUpStatus == "dead") ~MIOrder,
+                      data = WHASDS2,
+                      rho = 0)
+MIOrder_LR
+```
+
+
+### Cox Proportional Hazard
+
+```{r}
+MIOrder_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~MIOrder,
+                 data = WHASDS2)
+MIOrder_CPH
+tidy(MIOrder_CPH)
+```
+
+
+### Survival Time Estimation at Q1, median and Q3 survival probability
+
+estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
+
+```{r}
+quantile(MIOrder_KM, probs = c(0.25, 0.5, 0.75))
+```
+
+
+## Univariable - Type of Type of MI
+
+### KM Estimate
+
+```{r}
+MIType_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~MIType,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+summary(MIType_KM)
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(MITypeKM,
+           data = WHASDS2,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+### Log Rank Test
+
+```{r}
+MIType_LR <- survdiff(Surv(time = dur_year, FUpStatus == "dead") ~MIType,
+                      data = WHASDS2,
+                      rho = 0)
+MIType_LR
+```
+
+### Cox Proportional Hazard
+
+```{r}
+MIType_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~MIType,
+                 data = WHASDS2)
+MIType_CPH
+tidy(MIType_CPH)
+```
+
+
+### Survival Time Estimation at Q1, median and Q3 survival probability
+
+estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
+
+```{r}
+quantile(MIType_KM, probs = c(0.25, 0.5, 0.75))
+```
+
+# Multivariable
+
+## Model 1 - all variables
+
+## Model 2 - p < 0.25
+
+## Model 3 - p < 0.05
+
+## Model comparison
+
+## Interaction
+
+# Final Model and Model Checking
+
+## Propotionality
+
+## Residual
+
+### Residual Plot
+
+# Prediction
+
+## LP Method
+
+## Risk Score Method
+
+(against average sample's parameter)
+
+## Expected Method
+
+# Prediction at 10 years
