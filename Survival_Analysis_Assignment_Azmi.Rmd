@@ -208,10 +208,8 @@ ggplot(WHASDS2, aes(bmi)) +
   geom_histogram(binwidth=1, colour="black", fill="white") +
   facet_wrap(~FUpStatus)
 ```
-
-## Overall
-
-### KM Estimate
+ 
+## KM Estimate
 
 ```{r}
 Overall_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~1,
@@ -220,7 +218,7 @@ Overall_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~1,
 Overall_KM
 ```
 
-### KM Plot
+## KM Plot
 
 ```{r}
 ggsurvplot(Overall_KM,
@@ -228,7 +226,7 @@ ggsurvplot(Overall_KM,
            risk.table = T)
 ```
 
-### Estimate survival time
+## Estimate survival time
 
 estimating survival time, at 25th percentile survival probability, median survival probability and 75th percentile survival probability
 
@@ -236,7 +234,7 @@ estimating survival time, at 25th percentile survival probability, median surviv
 quantile(Overall_KM, probs = c(0.25, 0.5, 0.75))
 ```
 
-### Survival Probability
+## Survival Probability
 
 ```{r}
 summary(Overall_KM, times = c(0.5, 1, 3, 5))
@@ -264,7 +262,6 @@ tidy(age_CPH)
 gender_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~gender,
                       data = WHASDS2,
                       type = "kaplan-meier")
-summary(gender_KM)
 ```
 
 ### KM Plot
@@ -366,7 +363,6 @@ tidy(BMI_CPH)
 BMICat_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~BMICat,
                       data = WHASDS2,
                       type = "kaplan-meier")
-summary(BMICat_KM)
 ```
 
 ### KM Plot
@@ -415,7 +411,6 @@ quantile(BMICat_KM, probs = c(0.25, 0.5, 0.75))
 CardioShock_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~CardioShock,
                       data = WHASDS2,
                       type = "kaplan-meier")
-summary(CardioShock_KM)
 ```
 
 ### KM Plot
@@ -463,7 +458,6 @@ quantile(CardioShock_KM, probs = c(0.25, 0.5, 0.75))
 CHF_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~ConHeartCx,
                       data = WHASDS2,
                       type = "kaplan-meier")
-summary(CHF_KM)
 ```
 
 ### KM Plot
@@ -513,7 +507,6 @@ quantile(CHF_KM, probs = c(0.25, 0.5, 0.75))
 CHB_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~CompHeartBlock,
                       data = WHASDS2,
                       type = "kaplan-meier")
-summary(CHB_KM)
 ```
 
 ### KM Plot
@@ -563,7 +556,6 @@ quantile(CHB_KM, probs = c(0.25, 0.5, 0.75))
 MIOrder_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~MIOrder,
                       data = WHASDS2,
                       type = "kaplan-meier")
-summary(MIOrder_KM)
 ```
 
 ### KM Plot
@@ -613,7 +605,6 @@ quantile(MIOrder_KM, probs = c(0.25, 0.5, 0.75))
 MIType_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~MIType,
                       data = WHASDS2,
                       type = "kaplan-meier")
-summary(MIType_KM)
 ```
 
 ### KM Plot
@@ -653,13 +644,68 @@ estimating survival time, at 25th percentile survival probability, median surviv
 quantile(MIType_KM, probs = c(0.25, 0.5, 0.75))
 ```
 
+
+## Univariable Summary
+
+```{r}
+SCPH_Result <- matrix(c("Age", 0.07, "(0.05, 0.08)", "< 0.001",
+                        "Gender", 0.38, " (0.11, 0.65)", 0.006,
+                        "Heart Rate", 0.02, "(0.01, 0.02", "<0.001",
+                        "Systolic BP", -0.01, "(-0.01, 0.00)", 0.042,
+                        "Diastolic BP", -0.10, "(-0.13, -0.07)", "<0.001",
+                        "BMI (Numerical)", -0.10, "(-0.13, -0.07)", "<0.001",
+                        "BMI - Underweight", 0, 1, "",
+                        "BMI - Normal", -0.76, "(-1.15, -0.48)", "<0.001",
+                        "BMI - Overweight", -1.32, "(-1.71, -0.92)", "<0.001",
+                        "BMI - Obese", -1.62, "(-2.09,-1.15)", "<0.001",
+                        "Type of Cardiogenic Shock - Yes", 0.28, "(-0.05, 0.61)", 0.092,
+                        "Type of Congestive Heart Complication - Yes", 1.20, "(0.93, 1.47)", "<0.001",
+                        "Type of Complete Heart Block - Yes", 0.48, "(-0.29, 1.24)", 0.219,
+                        "Type of MI Order - Recurrent", 0.43, "(0.15, 0.70)", 0.002,
+                        "Typw of MI - Q-wave", -0.66, "(-0.99, -0.33)", "<0.001"),
+                      ncol = 4,
+                      byrow = T)
+colnames(SCPH_Result) <- c("Variables", "beta", "(95% CI)", "p-value")
+kable(SCPH_Result)
+```
+
+
+
 # Multivariable
 
 ## Model 1 - all variables
 
+IV - age, gender, hr, sbp, dbp, bmi (num), cardiogenic shock, congestive heart complication, complete heart block, MI order and type of MI
+
+### Cox Propotional Hazard
+
+
+```{r}
+all_CPH <- coxph(Surv(time = dur_year, 
+                      FUpStatus == "dead") ~ age + gender + hr + sysbp + diasbp + bmi + CardioShock + ConHeartCx + CompHeartBlock + MIOrder + MIType, 
+                 data = WHASDS2)
+all_CPH
+summary(all_CPH)
+tidy(all_CPH)
+```
+
 ## Model 2 - p < 0.25
 
+= all
+
 ## Model 3 - p < 0.05
+
+IV - age, gender, hr, sbp, dbp, bmi (num), congestive heart complication, MI order and type of MI
+
+```{r}
+sig.05_CPH <- coxph(Surv(time = dur_year, 
+                      FUpStatus == "dead") ~ age + gender + hr + sysbp + diasbp + bmi + ConHeartCx + MIOrder + MIType, 
+                 data = WHASDS2)
+sig.05_CPH
+summary(sig.05_CPH)
+tidy(sig.05_CPH)
+```
+
 
 ## Model comparison
 
