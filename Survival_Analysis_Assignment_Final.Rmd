@@ -1,0 +1,451 @@
+---
+title: "Survival Analysis Practical"
+author: "Mohd Azmi, Khairul Anwar, Mohd Nasrullah, Mohd Hazwan"
+date: "15/11/2019"
+output:
+    html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+---
+
+# Preface
+
+## Library
+
+```{r}
+library(pacman)
+p_load(haven, dplyr, psych, lubridate, knitr, ggplot2, survival, broom, survminer, mfp)
+```
+
+## Data Wrangling
+
+Import dataset
+```{r}
+WHASDS <- read_spss("whas500.sav")
+WHASDS
+```
+
+Convert to categorical data
+```{r}
+WHASDS2 <- WHASDS %>%
+  mutate(gender = factor(gender,
+                         labels = c("male", "female")),
+         MIOrder = factor(miord,
+                          labels = c("first", "recurrent")),
+         MIType = factor(mitype,
+                         labels = c("non Q-wave", "Q-wave")),
+         FUpStatus = factor(fstat,
+                            labels = c("alive", "dead"))) %>%
+  select (id,
+          FUpStatus,
+          admitdate,
+          fdate,
+          lenfol,
+          age,
+          gender,
+          bmi,
+          sysbp,
+          MIOrder,
+          MIType)
+WHASDS2
+```
+
+
+calculate duration
+```{r}
+WHASDS2 <- WHASDS2 %>%
+  mutate(dur = as.duration(WHASDS2$admitdate %--% WHASDS2$fdate),
+         dur_day = dur/ddays(1),
+         dur_year = dur/dyears(1)) %>%
+  select (id,
+          FUpStatus,
+          dur_year,
+          age,
+          gender,
+          bmi,
+          sysbp,
+          MIOrder,
+          MIType,
+          admitdate,
+          fdate,
+          dur_day,
+          lenfol)
+WHASDS2
+```
+
+
+# Descriptive Study
+
+## Summary
+
+Most of the participant was gender (n=300), first MI episode (n=329) and non Q-wave type (n=347). 
+The mean age of the participant was 69.85 years old, with mean BMI 26.61 m/kg^2^, and mean systolic BP of 145 mmHg.
+
+```{r}
+WHASDS2 %>%
+  select_if(is.numeric) %>%
+  summary()
+WHASDS2 %>%
+  select_if(is.factor) %>%
+  summary()
+```
+
+```{r}
+ggplot(WHASDS2, aes(x=FUpStatus, fill=FUpStatus)) +
+  geom_bar()
+ggplot(WHASDS2, aes(x=gender, fill=gender)) +
+  geom_bar()
+ggplot(WHASDS2, aes(x=MIOrder, fill=MIOrder)) +
+  geom_bar()
+ggplot(WHASDS2, aes(x=MIType, fill=MIType)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(WHASDS2, aes(age)) +
+  geom_histogram(binwidth=2, colour="black", fill="white")
+ggplot(WHASDS2, aes(sysbp)) +
+  geom_histogram(binwidth=5, colour="black", fill="white")
+ggplot(WHASDS2, aes(bmi)) +
+  geom_histogram(binwidth=1, colour="black", fill="white")
+```
+
+
+Barchart for all categorical data, divide by follow up status
+```{r}
+ggplot(WHASDS2, aes(x=gender, fill=gender)) +
+  geom_bar() +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(x=MIOrder, fill=MIOrder)) +
+  geom_bar() +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(x=MIType, fill=MIType)) +
+  geom_bar() +
+  facet_wrap(~FUpStatus)
+```
+
+histogram for all numerical data, divide by follow up status
+**to add normal curve**
+```{r}
+ggplot(WHASDS2, aes(age)) +
+  geom_histogram(binwidth=2.5, colour="black", fill="white") +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(sysbp)) +
+  geom_histogram(binwidth=5, colour="black", fill="white") +
+  facet_wrap(~FUpStatus)
+ggplot(WHASDS2, aes(bmi)) +
+  geom_histogram(binwidth=1, colour="black", fill="white") +
+  facet_wrap(~FUpStatus)
+```
+ 
+## KM Estimate For Overall Participants
+
+The overall median survival time was 4.46 years (95% CI = 4.18, NA).
+
+```{r}
+Overall_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~1,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+Overall_KM
+```
+
+## KM Plot for Overall Participants
+
+The KM plot for overall participant is shown below.
+
+```{r}
+ggsurvplot(Overall_KM,
+           data = WHASDS2,
+           risk.table = T)
+```
+
+
+## Survival Probability
+
+The 5-year survival probability was 49.4% (95% CI = 44.1%, 55.3%). Other survival probability is shown below.
+
+```{r}
+summary(Overall_KM, times = c(0.5, 1, 3, 5))
+```
+
+
+# Univariable
+
+## Univariable - Age
+
+### Cox Proportional Hazard
+
+```{r}
+age_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~age,
+                 data = WHASDS2)
+age_CPH
+tidy(age_CPH)
+```
+
+## Univariable - Gender
+
+### KM Estimate
+
+```{r}
+gender_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~gender,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+gender_KM
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(gender_KM,
+           data = WHASDS2,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+
+### Cox Proportional Hazard
+
+```{r}
+gender_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~gender,
+                 data = WHASDS2)
+gender_CPH
+tidy(gender_CPH)
+```
+
+
+## Univariable - BMI
+
+### Cox Proportional Hazard
+
+```{r}
+BMI_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~bmi,
+                 data = WHASDS2)
+BMI_CPH
+tidy(BMI_CPH)
+```
+
+
+
+
+## Univariable - Systolic BP
+
+### Cox Proportional Hazard
+
+```{r}
+SBP_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~sysbp,
+                 data = WHASDS2)
+SBP_CPH
+tidy(SBP_CPH)
+```
+
+
+## Univariable - Type of MI Order
+
+### KM Estimate
+
+```{r}
+MIOrder_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~MIOrder,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(MIOrder_KM,
+           data = WHASDS2,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+### Log Rank Test
+
+```{r}
+MIOrder_LR <- survdiff(Surv(time = dur_year, FUpStatus == "dead") ~MIOrder,
+                      data = WHASDS2,
+                      rho = 0)
+MIOrder_LR
+```
+
+
+### Cox Proportional Hazard
+
+```{r}
+MIOrder_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~MIOrder,
+                 data = WHASDS2)
+MIOrder_CPH
+tidy(MIOrder_CPH)
+```
+
+## Univariable - Type of MI
+
+### KM Estimate
+
+```{r}
+MIType_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~MIType,
+                      data = WHASDS2,
+                      type = "kaplan-meier")
+```
+
+### KM Plot
+
+```{r}
+ggsurvplot(MIType_KM,
+           data = WHASDS2,
+           risk.table = T,
+           linetype = c(1,2),
+           pval = T)
+```
+
+### Cox Proportional Hazard
+
+```{r}
+MIType_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~MIType,
+                 data = WHASDS2)
+MIType_CPH
+tidy(MIType_CPH)
+```
+
+
+## Univariable Summary
+
+All variable was significant (at p < 0.05) in simple cox proportional hazard.
+
+```{r}
+SCPH_Result <- matrix(c("Age", 0.07, "(0.05, 0.08)", "< 0.001",
+                        "Gender (Female)", 0.38, " (0.11, 0.65)", 0.006,
+                        "Systolic BP", -0.01, "(-0.01, 0.00)", 0.042,
+                        "BMI (Numerical)", -0.10, "(-0.13, -0.07)", "<0.001",
+                       "Type of MI Order (Recurrent)", 0.43, "(0.15, 0.70)", 0.002,
+                        "Typw of MI (Q-wave)", -0.66, "(-0.99, -0.33)", "<0.001"),
+                      ncol = 4,
+                      byrow = T)
+colnames(SCPH_Result) <- c("Variables", "beta", "(95% CI)", "p-value")
+kable(SCPH_Result)
+```
+
+
+
+# Multivariable
+
+**For multivariable analysis (multiple cox proportional hazard model), all variable with significant simple cox proportional hazard (at p < 0.05) were included in main effect models. The variables are age,**  
+
+
+## Model 1 - all variables
+
+IV - age, gender, sbp, bmi, MI order and type of MI
+
+### Cox Propotional Hazard
+
+
+```{r}
+all_CPH <- coxph(Surv(time = dur_year, 
+                      FUpStatus == "dead") ~ age + gender + sysbp + bmi + MIOrder + MIType, 
+                 data = WHASDS2)
+all_CPH
+summary(all_CPH)
+tidy(all_CPH)
+```
+
+## Model 2 - remove gender
+
+```{r}
+AllnoGender_CPH <- coxph(Surv(time = dur_year, 
+                      FUpStatus == "dead") ~ age + bmi + sysbp + MIOrder + MIType, 
+                 data = WHASDS2)
+AllnoGender_CPH
+summary(AllnoGender_CPH)
+tidy(AllnoGender_CPH)
+```
+
+
+
+## Model 3 - remove gender & miorder
+
+```{r}
+Model3_CPH <- coxph(Surv(time = dur_year, 
+                      FUpStatus == "dead") ~ age + bmi + sysbp + MIType, 
+                 data = WHASDS2)
+Model3_CPH
+summary(Model3_CPH)
+tidy(Model3_CPH)
+```
+
+
+## Model comparison
+
+```{r}
+anova(all_CPH, AllnoGender_CPH, test = "Chisq")
+```
+
+```{r}
+anova(AllnoGender_CPH, Model3_CPH, test = "Chisq")
+```
+
+```{r}
+anova(all_CPH, Model3_CPH, test = "Chisq")
+```
+
+
+model 3 is selected, as it's most parsimonous
+- age, sysbp, bmi, mitype
+
+```{r}
+PrelimFinalModel <- Model3_CPH
+```
+
+
+## Interaction
+
+### age x sysbp interaction
+
+we hypothesis age systolic bp will interaction. high age will have higher bp. however, no interaction between
+
+```{r}
+PFModel_IntAgeSBP <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~ age + bmi + sysbp + MIType + age:sysbp, data = WHASDS2)
+summary(PFModel_IntAgeSBP)
+```
+
+
+### BMI x SBP
+
+```{r}
+PFModel_IntBMISBP <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~ age + bmi + sysbp + MIType + bmi:sysbp, data = WHASDS2)
+summary(PFModel_IntBMISBP)
+```
+
+
+### sysbp x mitype
+
+```{r}
+PFModel_IntSBPMIT <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~ age + bmi + sysbp + MIType + sysbp:MIType, data = WHASDS2)
+summary(PFModel_IntSBPMIT)
+```
+
+# Final Model and Model Checking
+
+```{r}
+FinalModel <- PrelimFinalModel
+```
+
+
+## Propotionality
+
+## Residual
+
+### Residual Plot
+
+# Prediction
+
+## LP Method
+
+## Risk Score Method
+
+(against average sample's parameter)
+
+## Expected Method
+
+# Prediction at 10 years

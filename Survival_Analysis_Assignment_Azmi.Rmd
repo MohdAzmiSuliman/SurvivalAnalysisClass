@@ -262,6 +262,7 @@ tidy(age_CPH)
 gender_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~gender,
                       data = WHASDS2,
                       type = "kaplan-meier")
+gender_KM
 ```
 
 ### KM Plot
