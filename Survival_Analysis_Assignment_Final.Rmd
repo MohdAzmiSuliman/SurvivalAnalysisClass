@@ -1,15 +1,22 @@
 ---
 title: "Survival Analysis Practical"
-author: "Mohd Azmi, Khairul Anwar, Mohd Nasrullah, Mohd Hazwan"
+author: "Mohd Azmi, Mohd Khairul Anwar, Mohd Nasrullah, Mohd Hazwan"
 date: "15/11/2019"
 output:
     html_document:
-    toc: yes
-    toc_float:
-      collapsed: no
+      number_sections: true
+      toc: yes
+      toc_float:
+        collapsed: no
 ---
 
 # Preface
+
+## Research Problem
+
+The dataset taken from Worcester Heart Attack Study. The dataset contain 500 samples, to study factors and time trends associated with long-term survival following acute myocardial infarction.
+
+In this study, we would like to ascertain factors associated with survival following acute myocardial infarction, and predict survival probability.
 
 ## Library
 
@@ -85,10 +92,12 @@ The mean age of the participant was 69.85 years old, with mean BMI 26.61 m/kg^2^
 ```{r}
 WHASDS2 %>%
   select_if(is.numeric) %>%
-  summary()
+  summary() %>%
+  kable()
 WHASDS2 %>%
   select_if(is.factor) %>%
-  summary()
+  summary() %>%
+  kable()
 ```
 
 ```{r}
@@ -113,6 +122,7 @@ ggplot(WHASDS2, aes(bmi)) +
 
 
 Barchart for all categorical data, divide by follow up status
+
 ```{r}
 ggplot(WHASDS2, aes(x=gender, fill=gender)) +
   geom_bar() +
@@ -163,7 +173,7 @@ ggsurvplot(Overall_KM,
 
 ## Survival Probability
 
-The 5-year survival probability was 49.4% (95% CI = 44.1%, 55.3%). Other survival probability is shown below.
+The 5-year survival probability was 49.4% (95% CI = 44.1%, 55.3%). Other survival probability (for 6 months, 1 year and 3 years) was shown below.
 
 ```{r}
 summary(Overall_KM, times = c(0.5, 1, 3, 5))
@@ -176,16 +186,20 @@ summary(Overall_KM, times = c(0.5, 1, 3, 5))
 
 ### Cox Proportional Hazard
 
+For each 1 year increase of age, the log hazard to die changes by a factor of 0.07 (95% 0.05, 0.08, p < 0.001).
+
 ```{r}
 age_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~age,
                  data = WHASDS2)
-age_CPH
 tidy(age_CPH)
+tidy(exponentiate = T, age_CPH)
 ```
 
 ## Univariable - Gender
 
 ### KM Estimate
+
+The median survival time for male patient was 5.92 years (95% CI = 4.68, NA) and female patient was 3.61 years (95% CI = 2.48, 4.46). The survival time was significant different (p = 0.005)
 
 ```{r}
 gender_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~gender,
@@ -195,6 +209,8 @@ gender_KM
 ```
 
 ### KM Plot
+
+KM Plot for gender was shown below
 
 ```{r}
 ggsurvplot(gender_KM,
@@ -207,11 +223,13 @@ ggsurvplot(gender_KM,
 
 ### Cox Proportional Hazard
 
+If the patient was female, the hazard to die changes by a factor of 1.46 (95% CI = 1.12, 1.92, p < 0.001) compared to male patients. 
+
 ```{r}
 gender_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~gender,
                  data = WHASDS2)
-gender_CPH
 tidy(gender_CPH)
+tidy(gender_CPH, exponentiate =  T)
 ```
 
 
@@ -219,11 +237,13 @@ tidy(gender_CPH)
 
 ### Cox Proportional Hazard
 
+For each 1 unit increase of BMI, the log hazard to die changes by a factor of -0.10 (95% = -0.13, -0.07, p < 0.001).
+
 ```{r}
 BMI_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~bmi,
                  data = WHASDS2)
-BMI_CPH
 tidy(BMI_CPH)
+tidy(BMI_CPH, exponentiate = T)
 ```
 
 
@@ -233,11 +253,13 @@ tidy(BMI_CPH)
 
 ### Cox Proportional Hazard
 
+For each 1 mmHg increase of Systolic BP, the log hazard to die changes by a factor of -0.005 (95% = - 0.008, - 0.0001, p = 0.042).
+
 ```{r}
 SBP_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~sysbp,
                  data = WHASDS2)
-SBP_CPH
 tidy(SBP_CPH)
+tidy(SBP_CPH, exponentiate = T)
 ```
 
 
@@ -245,13 +267,19 @@ tidy(SBP_CPH)
 
 ### KM Estimate
 
+The median survival time for first MI episode was 5.92 years (95% CI = 5.28, NA) and for recurrent MI episode was 3.38 years (95% CI = 2.33, 4.33). The survival time was significant different (p = 0.002)
+
+
 ```{r}
 MIOrder_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~MIOrder,
                       data = WHASDS2,
                       type = "kaplan-meier")
+MIOrder_KM
 ```
 
 ### KM Plot
+
+KM Plot for type of MI order was shown below
 
 ```{r}
 ggsurvplot(MIOrder_KM,
@@ -261,33 +289,29 @@ ggsurvplot(MIOrder_KM,
            pval = T)
 ```
 
-### Log Rank Test
-
-```{r}
-MIOrder_LR <- survdiff(Surv(time = dur_year, FUpStatus == "dead") ~MIOrder,
-                      data = WHASDS2,
-                      rho = 0)
-MIOrder_LR
-```
-
-
 ### Cox Proportional Hazard
+
+If the episode of MI was recurrent episod, the hazard to die changes by a factor of 1.53 (95% CI = 1.17, 2.01, p < 0.001) compared to first MI episode. 
 
 ```{r}
 MIOrder_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~MIOrder,
                  data = WHASDS2)
-MIOrder_CPH
 tidy(MIOrder_CPH)
+tidy(MIOrder_CPH, exponentiate = T)
 ```
 
 ## Univariable - Type of MI
 
 ### KM Estimate
 
+The median survival time for Non Q-wave MI was 3.50 years (95% CI = 2.89, 4.46) and Q-wave MI was 6.44 years (95% CI = 6.44, NA). The survival time was significant different (p = 0.005)
+
+
 ```{r}
 MIType_KM <- survfit(Surv(time = dur_year, FUpStatus == "dead") ~MIType,
                       data = WHASDS2,
                       type = "kaplan-meier")
+MIType_KM
 ```
 
 ### KM Plot
@@ -302,17 +326,20 @@ ggsurvplot(MIType_KM,
 
 ### Cox Proportional Hazard
 
+If the MI was Q-wave type, the hazard to die changes by a factor of 0.52 (95% CI = 0.37, 0.72, p < 0.001) compared to non Q-wave type. 
+
 ```{r}
 MIType_CPH <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~MIType,
                  data = WHASDS2)
-MIType_CPH
 tidy(MIType_CPH)
+tidy(MIType_CPH, exponentiate = T)
 ```
 
 
 ## Univariable Summary
 
-All variable was significant (at p < 0.05) in simple cox proportional hazard.
+All variable was significant (at p < 0.05) in simple cox proportional hazard. The univariable analysis result was shown below.
+
 
 ```{r}
 SCPH_Result <- matrix(c("Age", 0.07, "(0.05, 0.08)", "< 0.001",
@@ -320,7 +347,7 @@ SCPH_Result <- matrix(c("Age", 0.07, "(0.05, 0.08)", "< 0.001",
                         "Systolic BP", -0.01, "(-0.01, 0.00)", 0.042,
                         "BMI (Numerical)", -0.10, "(-0.13, -0.07)", "<0.001",
                        "Type of MI Order (Recurrent)", 0.43, "(0.15, 0.70)", 0.002,
-                        "Typw of MI (Q-wave)", -0.66, "(-0.99, -0.33)", "<0.001"),
+                        "Type of MI (Q-wave)", -0.66, "(-0.99, -0.33)", "<0.001"),
                       ncol = 4,
                       byrow = T)
 colnames(SCPH_Result) <- c("Variables", "beta", "(95% CI)", "p-value")
@@ -329,14 +356,14 @@ kable(SCPH_Result)
 
 
 
-# Multivariable
+# Multivariable Analysis
 
-**For multivariable analysis (multiple cox proportional hazard model), all variable with significant simple cox proportional hazard (at p < 0.05) were included in main effect models. The variables are age,**  
+For multivariable analysis (multiple cox proportional hazard model), all variable with significant simple cox proportional hazard (at p < 0.05) were included in main effect models. The variables are age, gender, systolic BP, BMI, MI order and type of MI. 
 
 
-## Model 1 - all variables
+## Model 1
 
-IV - age, gender, sbp, bmi, MI order and type of MI
+For Main Effect Model 1, variables included were age, gender, sbp, bmi, MI order and type of MI. The Cox Proportional Hazard model for Main Effect Model 1 was shown below.
 
 ### Cox Propotional Hazard
 
@@ -350,7 +377,9 @@ summary(all_CPH)
 tidy(all_CPH)
 ```
 
-## Model 2 - remove gender
+## Model 2
+
+For Main Effect Model 2, variable gender were excluded from model 1. The Cox Proportional Hazard Model for Main Effect Model 2 was shown below.
 
 ```{r}
 AllnoGender_CPH <- coxph(Surv(time = dur_year, 
@@ -365,6 +394,8 @@ tidy(AllnoGender_CPH)
 
 ## Model 3 - remove gender & miorder
 
+For Main Effect Model 3, variable gender and MI order were excluded from model 1. The Cox Proportional Hazard Model for Main Effect Model 3 was shown below.
+
 ```{r}
 Model3_CPH <- coxph(Surv(time = dur_year, 
                       FUpStatus == "dead") ~ age + bmi + sysbp + MIType, 
@@ -376,6 +407,8 @@ tidy(Model3_CPH)
 
 
 ## Model comparison
+
+All the three main effect models were compared. The comparisons were shown below.
 
 ```{r}
 anova(all_CPH, AllnoGender_CPH, test = "Chisq")
@@ -389,9 +422,7 @@ anova(AllnoGender_CPH, Model3_CPH, test = "Chisq")
 anova(all_CPH, Model3_CPH, test = "Chisq")
 ```
 
-
-model 3 is selected, as it's most parsimonous
-- age, sysbp, bmi, mitype
+Since there was no significant different between the three models, model 3 was selected, as it's most parsimonous. The variable includes age, systolic BP, BMI, and type of MI.
 
 ```{r}
 PrelimFinalModel <- Model3_CPH
@@ -400,17 +431,24 @@ PrelimFinalModel <- Model3_CPH
 
 ## Interaction
 
-### age x sysbp interaction
+In this study, three interaction terms will be tested, including
 
-we hypothesis age systolic bp will interaction. high age will have higher bp. however, no interaction between
+- age and systolic BP
+- BMI and Systolic BP
+- Systolic BP and Type of MI
+
+### Interaction term between age and systolic BP
+
+There was no significant interaction term between age and systolic BP.
 
 ```{r}
 PFModel_IntAgeSBP <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~ age + bmi + sysbp + MIType + age:sysbp, data = WHASDS2)
 summary(PFModel_IntAgeSBP)
 ```
 
+### Interaction term between BMI and Systolic BP
 
-### BMI x SBP
+There was no significant interaction term between BMI and systolic BP.
 
 ```{r}
 PFModel_IntBMISBP <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~ age + bmi + sysbp + MIType + bmi:sysbp, data = WHASDS2)
@@ -418,7 +456,9 @@ summary(PFModel_IntBMISBP)
 ```
 
 
-### sysbp x mitype
+### Interaction term between Systolic BP and Type of MI
+
+There was no significant interaction term between systolic BP and type of MI.
 
 ```{r}
 PFModel_IntSBPMIT <- coxph(Surv(time = dur_year, FUpStatus == "dead") ~ age + bmi + sysbp + MIType + sysbp:MIType, data = WHASDS2)
@@ -427,25 +467,106 @@ summary(PFModel_IntSBPMIT)
 
 # Final Model and Model Checking
 
+Final Model include age, BMI, systolic BP and type of MI variables.
+
 ```{r}
 FinalModel <- PrelimFinalModel
+summary(FinalModel)
 ```
 
 
-## Propotionality
+## Model checking - Linearity
 
-## Residual
+Linearity assumption was tested with Martingale Residual checking. The Martingale Residual Checking show that the model had acceptable linearity, as shown below.
 
-### Residual Plot
+
+```{r Linearity in hazard assumption}
+
+ggcoxfunctional (Surv(time = dur_year, event = FUpStatus == 'dead') ~  age + bmi, data = WHASDS2) 
+
+```
+
+## Model Checking - Proportionality
+
+Proportionality assumption was checked and show that the assumption was met. The plots were shown below.
+
+```{r Proportional hazard assumption using KM method}
+
+prop.h <- cox.zph(FinalModel, transform = 'km', global = TRUE)
+prop.h
+plot(prop.h)
+```
+
+## Final Model Interpretation
+
+```{r}
+tidy(FinalModel)
+```
+
+- The final model include age, BMI, systolic BP and type of MI
+- For each increment of 1 year of age, the log hazard to die change by 0.06 (95% CI = 0.05, 0.07, p < 0.001) when adjusted to BMI, systolic BP and type of MI
+- For each increment of 1 unit of BMI, the log hazard to die change by -0.04 (95% CI = -0.07, -0.01, p = 0.009) when adjusted to age, systolic BP and type of MI
+- For each increament of 1 mmHg, the log hazard to die change by -0.004 (95% CI = -0.009, -0.0001, p = 0.046) when adjusted to age, BMI and type of MI
+
 
 # Prediction
 
-## LP Method
+## Create new data
 
-## Risk Score Method
+In this study, we would like to predict the survival probablity for data below
 
-(against average sample's parameter)
+- age: 60 and 80 years old
+- BMI: 20 and 30
+- Systolic BP: 120, 140 and 160 mmHg
+- Type of MI: Non Q-wave and Q-wave
 
-## Expected Method
 
-# Prediction at 10 years
+## Predict Risk against Average Population
+
+The risk of death for patient (observation 1) with age 60, BMI 20, systolic BP of 120 and with Q-wave MI was 0.67 as compared to average population, while for patient (observation 6) with age 80, BMI 20, systolic BP of 140 with Q-wave MI was 1.94 as compared to average population. The risk of death for other parameters was shown below.
+
+
+```{r create new data}
+new_data <- expand.grid(age =c(60, 80),
+                        bmi = c(20,30),
+                        sysbp = c(120, 140, 160),
+                        MIType = c("Q-wave","non Q-wave"))
+
+risk_new <- predict(FinalModel, newdata = new_data, type = "risk")
+head(cbind(new_data, risk_new))
+```
+
+## Predict number of event for given follow-up time
+
+We also would like predict the number of event, at 5 and 10 years follow-up time.
+
+For patient (observation 1) with age of 60, BMI 20, systolic BP 120 and q-wave MI, the expected number of event was 0.39 at 5 years follow up. For patient (observation 48) with age of 80, BMI 30, systolic BP 160 and non Q-wave, the expected number of event was 12.03 at 10 years follow up. The expected number of event for other parameters was shown below.
+
+```{r}
+new_data2 <- expand.grid(age =c(60, 80),
+                        bmi = c(20,30),
+                        sysbp = c(120, 140, 160),
+                        MIType = c("Q-wave","non Q-wave"),
+                        FUpStatus = "dead",
+                        dur_year = c(5,10))
+predict_new <- predict(FinalModel, newdata = new_data2, type = "expected")
+head(cbind(new_data2, predict_new))
+tail(cbind(new_data2, predict_new))
+```
+
+## Survival Probability
+
+The baseline hazard for our model, at 6 years, was 0.7211136.
+
+```{r}
+base_FinalModel <- basehaz(FinalModel)
+tail(base_FinalModel)
+```
+
+For patient (observation 1) with age 60, BMI 20, systolic BP 120 with q-wave MI, the probability of death was 0.48, while for patient (observation 6) with age 80, BMI 20, systolic BP 140 with q-wave MI, the probability of death was 1.40.
+
+```{r}
+Predrisk_new <- 0.7211136*risk_new
+head(cbind(new_data, Predrisk_new))
+```
+
