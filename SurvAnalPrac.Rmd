@@ -40,7 +40,7 @@ DataSet <- read_dta("stroke_outcome.dta")
 
 ```{r, message=FALSE}
 DataSet <- DataSet %>%
-  mutate_if(is.labelled, funs(as_factor(.)))
+  mutate_if(is.labelled, ~(as_factor(.)))
 kable(head(DataSet))
 ```
 
